@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Clipboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #18181b;
+    --surface-hover: #1e1e22;
+    --border: #2a2a2e;
+    --border-hover: #3a3a40;
+    --text: #e4e4e7;
+    --text-muted: #71717a;
+    --accent: #a3e635;
+    --accent-dim: rgba(163, 230, 53, 0.08);
+    --accent-glow: rgba(163, 230, 53, 0.15);
+    --tag-bg: #27272a;
+    --copied: #22c55e;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  header h1::before {
+    content: '>';
+    opacity: 0.4;
+  }
+
+  header p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    padding-left: 1.1rem;
+  }
+
+  .filter-bar {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
+
+  .filter-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .prompt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .prompt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .prompt-card:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+  }
+
+  .prompt-card:active {
+    transform: translateY(0);
+  }
+
+  .prompt-card.copied {
+    border-color: var(--copied) !important;
+    box-shadow: 0 0 0 1px var(--copied), 0 0 20px rgba(34, 197, 94, 0.08);
+  }
+
+  .prompt-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .prompt-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .prompt-tag {
+    font-size: 0.6rem;
+    font-weight: 500;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .prompt-text {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .copy-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    margin-top: 0.15rem;
+  }
+
+  .prompt-card:hover .copy-icon {
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .prompt-card.copied .copy-icon {
+    color: var(--copied);
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  .copy-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--copied);
+    color: #0e0e10;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  .add-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .add-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius);
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s ease;
+  }
+
+  .add-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .add-form {
+    display: none;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .add-form.visible { display: flex; }
+
+  .add-form input, .add-form textarea, .add-form select {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .add-form input:focus, .add-form textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .add-form textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+
+  .add-form select {
+    cursor: pointer;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+  }
+
+  .form-actions button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--text-muted);
+  }
+
+  .btn-cancel:hover { color: var(--text); border-color: var(--border-hover); }
+
+  .btn-save {
+    background: var(--accent);
+    color: #0e0e10;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .btn-save:hover { filter: brightness(1.1); }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .prompt-card { animation: fadeIn 0.2s ease both; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>prompt_clipboard</h1>
+    <p>Click any prompt to copy. Add your own below. <span style="color:var(--text-muted);font-size:0.7rem;cursor:pointer;border-bottom:1px dashed var(--border)" onclick="resetDefaults()" title="Remove custom prompts and restore defaults">reset to defaults</span></p>
+  </header>
+
+  <div class="filter-bar" id="filters"></div>
+  <div class="prompt-list" id="promptList"></div>
+
+  <div class="add-section">
+    <button class="add-btn" id="addBtn" onclick="toggleForm()">+ add prompt</button>
+    <div class="add-form" id="addForm">
+      <input type="text" id="newLabel" placeholder="Label (e.g. Handoff Doc)">
+      <textarea id="newPrompt" placeholder="Prompt text..."></textarea>
+      <select id="newTag">
+        <option value="context">context</option>
+        <option value="output">output</option>
+        <option value="review">review</option>
+        <option value="debug">debug</option>
+        <option value="workflow">workflow</option>
+        <option value="safety">safety</option>
+      </select>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="toggleForm()">cancel</button>
+        <button class="btn-save" onclick="savePrompt()">save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ copied to clipboard</div>
+
+<script>
+const CLIPBOARD_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`;
+const CHECK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
+
+const DEFAULT_PROMPTS = [
+  // ── YOUR ORIGINALS ──
+  {
+    id: 'd1',
+    label: 'Markdown Prompt Export',
+    text: 'Can you write this up in the form of a markdown prompt I can share with Cursor?',
+    tag: 'output'
+  },
+  {
+    id: 'd2',
+    label: 'Handoff Document',
+    text: 'Create a handoff document that captures all the key themes, decisions, open questions, and the current state of the project. Include enough context that a new AI session (or a teammate) could pick up where we left off.',
+    tag: 'workflow'
+  },
+  {
+    id: 'd3',
+    label: 'Codebase Familiarization',
+    text: 'Familiarize yourself with my codebase. Start by reading the project overview doc and directory structure, then summarize your understanding of the architecture before making any changes.',
+    tag: 'context'
+  },
+  {
+    id: 'd4',
+    label: 'Code Review',
+    text: 'Review this code for bugs, edge cases, performance issues, and readability. Don\'t refactor — just flag problems with brief explanations of why they matter.',
+    tag: 'review'
+  },
+  {
+    id: 'd5',
+    label: 'Explain Before Changing',
+    text: 'Before writing any code, explain your plan in plain language. What will you change, why, and what are the tradeoffs? Wait for my approval before implementing.',
+    tag: 'workflow'
+  },
+  {
+    id: 'd6',
+    label: 'Minimal Fix Only',
+    text: 'Fix only the specific bug or issue described. Do not refactor surrounding code, rename variables, change formatting, or make any other improvements — no matter how tempting.',
+    tag: 'debug'
+  },
+  {
+    id: 'd7',
+    label: 'Summarize Current State',
+    text: 'Summarize what we\'ve done so far in this conversation, what\'s working, what\'s broken, and what the next steps should be.',
+    tag: 'workflow'
+  },
+  {
+    id: 'd8',
+    label: 'Think Step-by-Step',
+    text: 'Think through this step by step. Break the problem down, consider edge cases, and explain your reasoning before providing a solution.',
+    tag: 'debug'
+  },
+  {
+    id: 'd9',
+    label: 'Write Tests First',
+    text: 'Before implementing the feature, write the tests first. Define the expected behavior, edge cases, and failure modes. Then implement to make the tests pass.',
+    tag: 'workflow'
+  },
+  {
+    id: 'd10',
+    label: 'Don\'t Hallucinate APIs',
+    text: 'Only use APIs, methods, and libraries that you are confident exist. If you\'re unsure whether something is available, say so rather than guessing. I\'d rather you ask than fabricate.',
+    tag: 'context'
+  },
+  {
+    id: 'd11',
+    label: 'Scope Check',
+    text: 'Before starting, tell me: What files will you need to touch? What\'s your understanding of the current behavior vs. desired behavior? Are there any dependencies or side effects I should know about?',
+    tag: 'context'
+  },
+  {
+    id: 'd12',
+    label: 'Diff Only',
+    text: 'Show me only the lines that changed, with enough surrounding context to understand where they go. Don\'t output the entire file.',
+    tag: 'output'
+  },
+
+  // ── YOUR NEW PROMPT ──
+  {
+    id: 'd13',
+    label: 'Risk Assessment',
+    text: 'What risk is there to making these changes? Are you certain you understand all the angles and ramifications? Walk me through what could break, what depends on this code, and what assumptions you\'re making. If you\'re not fully certain, say so.',
+    tag: 'review'
+  },
+
+  // ── RESEARCH-BACKED ADDITIONS ──
+  // Context Engineering (Anthropic best practice: "intelligence is not the bottleneck, context is")
+  {
+    id: 'd14',
+    label: 'Set the Constraints',
+    text: 'Here are your constraints for this task: Use only the existing patterns and libraries already in the project. Do not introduce new dependencies. Match the naming conventions and code style you see in the codebase. If you need to deviate from any of these, explain why first.',
+    tag: 'context'
+  },
+  // From Cursor best practices: prevent scope creep by anchoring to existing code
+  {
+    id: 'd15',
+    label: 'Extend, Don\'t Rewrite',
+    text: 'Take this existing code and add the feature I\'m describing. Keep all existing logic intact. Don\'t rewrite or restructure what already works — build on top of it incrementally.',
+    tag: 'workflow'
+  },
+  // MIT Sloan: "prompt templates as cognitive scaffolding" + problem formulation over prompt perfection
+  {
+    id: 'd16',
+    label: 'Define the Problem First',
+    text: 'Before proposing a solution, restate the problem in your own words. What exactly are we trying to solve? What\'s the scope and what\'s out of scope? What does success look like? Then propose your approach.',
+    tag: 'workflow'
+  },
+  // Anthropic: multi-context-window workflows — progress files & structured state
+  {
+    id: 'd17',
+    label: 'Progress Checkpoint',
+    text: 'Write a progress checkpoint. Summarize: (1) what\'s been completed and is working, (2) what\'s in progress, (3) known issues or bugs, (4) clear next steps. Format it so someone starting a fresh session could pick this up immediately.',
+    tag: 'workflow'
+  },
+  // From research: few-shot prompting massively improves accuracy
+  {
+    id: 'd18',
+    label: 'Match This Pattern',
+    text: 'Here\'s an example of the pattern/style I want you to follow: [paste example]. Now apply that same pattern to the new task I\'m about to describe. Match the structure, naming, and level of detail as closely as possible.',
+    tag: 'context'
+  },
+  // Anthropic engineering blog: "Claude tended to mark a feature as complete without proper testing"
+  {
+    id: 'd19',
+    label: 'Verify End-to-End',
+    text: 'Don\'t just check that the code compiles or passes unit tests. Walk through the entire user flow end-to-end and verify that the feature works as a real user would experience it. Flag anything that feels broken or incomplete, even if the code looks correct.',
+    tag: 'review'
+  },
+  // Context engineering: giving the model explicit identity and role boundaries
+  {
+    id: 'd20',
+    label: 'You Are a Cautious Senior Dev',
+    text: 'Approach this like a cautious senior developer doing a production deploy on a Friday. Prioritize stability over cleverness. Flag anything you\'re unsure about. Prefer boring, proven solutions over elegant but risky ones.',
+    tag: 'context'
+  },
+  // Chain-of-thought + self-consistency: multiple reasoning paths
+  {
+    id: 'd21',
+    label: 'Consider Alternatives',
+    text: 'Before committing to an approach, briefly outline 2-3 different ways to solve this. List the tradeoffs of each (complexity, performance, maintainability). Then recommend one and explain why.',
+    tag: 'debug'
+  },
+  // From prompt research: explicit output format specification
+  {
+    id: 'd22',
+    label: 'CLAUDE.md / Cursor Rules Export',
+    text: 'Take the conventions, patterns, and decisions we\'ve established in this conversation and write them as a CLAUDE.md (or .cursorrules) file I can put in my project root. Include coding style, architecture decisions, key libraries, and any rules about how AI should behave in this codebase.',
+    tag: 'output'
+  },
+  // Anthropic: "ask 1-2 key questions right away" — get AI to surface its own uncertainty
+  {
+    id: 'd23',
+    label: 'Ask Before You Assume',
+    text: 'If anything about this request is ambiguous or could be interpreted multiple ways, ask me 1-2 clarifying questions before proceeding. Don\'t guess at requirements — I\'d rather answer a quick question than undo wrong assumptions.',
+    tag: 'workflow'
+  },
+  // Security review — from coding AI best practices
+  {
+    id: 'd24',
+    label: 'Security Audit',
+    text: 'Review this code specifically for security vulnerabilities: injection risks, authentication/authorization gaps, exposed secrets, unsafe data handling, and CORS issues. Rate each finding by severity and suggest a fix.',
+    tag: 'review'
+  },
+  // Inspired by MIT CSAIL research on AI for SE: "the undergrad programming part" vs real engineering
+  {
+    id: 'd25',
+    label: 'Think Like an Engineer, Not a Coder',
+    text: 'Don\'t just write code that works. Consider: How will this be maintained? How does it handle failure? What happens at scale? What will confuse the next developer who reads this? Write code that a team can live with long-term.',
+    tag: 'review'
+  },
+  // Debugging: "here's what I expect vs what's happening"
+  {
+    id: 'd26',
+    label: 'Expected vs. Actual',
+    text: 'Here\'s the bug: I expected [X] but I\'m getting [Y]. Here\'s the relevant code: [paste]. Don\'t rewrite everything — just identify the root cause and suggest the minimal fix.',
+    tag: 'debug'
+  },
+  // From Anthropic harness patterns: structured incremental work
+  {
+    id: 'd27',
+    label: 'One Thing at a Time',
+    text: 'Let\'s work on this incrementally. Do one small, complete change at a time. After each change, verify it works before moving on. Don\'t try to do everything in a single pass.',
+    tag: 'workflow'
+  },
+  // Preventing over-eager AI: "Check with me before adding complex features"
+  {
+    id: 'd28',
+    label: 'Stay in Your Lane',
+    text: 'Only change what I\'ve asked you to change. Do not "improve" other parts of the code you happen to notice. Do not add features I didn\'t request. Do not update formatting or style in files I didn\'t mention. Stay focused.',
+    tag: 'context'
+  }
+];
+
+let prompts = [];
+let activeFilter = 'all';
+
+function loadPrompts() {
+  const saved = localStorage.getItem('prompt_clipboard_data');
+  if (saved) {
+    prompts = JSON.parse(saved);
+  } else {
+    prompts = [...DEFAULT_PROMPTS];
+    saveToStorage();
+  }
+}
+
+function saveToStorage() {
+  localStorage.setItem('prompt_clipboard_data', JSON.stringify(prompts));
+}
+
+function getAllTags() {
+  const tags = new Set(prompts.map(p => p.tag));
+  return ['all', ...Array.from(tags).sort()];
+}
+
+function renderFilters() {
+  const container = document.getElementById('filters');
+  const tags = getAllTags();
+  container.innerHTML = tags.map(tag =>
+    `<button class="filter-btn ${activeFilter === tag ? 'active' : ''}" onclick="setFilter('${tag}')">${tag}</button>`
+  ).join('');
+}
+
+function setFilter(tag) {
+  activeFilter = tag;
+  renderFilters();
+  renderPrompts();
+}
+
+function renderPrompts() {
+  const container = document.getElementById('promptList');
+  const filtered = activeFilter === 'all' ? prompts : prompts.filter(p => p.tag === activeFilter);
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state">No prompts in this category yet.</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map((p, i) =>
+    `<div class="prompt-card" id="card-${p.id}" onclick="copyPrompt('${p.id}')" style="animation-delay: ${i * 0.03}s" title="Click to copy">
+      <div class="prompt-content">
+        <div class="prompt-label">
+          ${p.label}
+          <span class="prompt-tag">${p.tag}</span>
+        </div>
+        <div class="prompt-text">${escapeHtml(p.text)}</div>
+      </div>
+      <div class="copy-icon" id="icon-${p.id}">${CLIPBOARD_ICON}</div>
+    </div>`
+  ).join('');
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+async function copyPrompt(id) {
+  const prompt = prompts.find(p => p.id === id);
+  if (!prompt) return;
+
+  try {
+    await navigator.clipboard.writeText(prompt.text);
+  } catch {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = prompt.text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  const card = document.getElementById(`card-${id}`);
+  const icon = document.getElementById(`icon-${id}`);
+  card.classList.add('copied');
+  icon.innerHTML = CHECK_ICON;
+
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+
+  setTimeout(() => {
+    card.classList.remove('copied');
+    icon.innerHTML = CLIPBOARD_ICON;
+    toast.classList.remove('show');
+  }, 1200);
+}
+
+function toggleForm() {
+  const form = document.getElementById('addForm');
+  const btn = document.getElementById('addBtn');
+  const visible = form.classList.toggle('visible');
+  btn.style.display = visible ? 'none' : 'block';
+  if (visible) document.getElementById('newLabel').focus();
+}
+
+function savePrompt() {
+  const label = document.getElementById('newLabel').value.trim();
+  const text = document.getElementById('newPrompt').value.trim();
+  const tag = document.getElementById('newTag').value;
+
+  if (!label || !text) return;
+
+  prompts.push({ id: 'u' + Date.now(), label, text, tag });
+  saveToStorage();
+
+  document.getElementById('newLabel').value = '';
+  document.getElementById('newPrompt').value = '';
+  toggleForm();
+  renderFilters();
+  renderPrompts();
+}
+
+function resetDefaults() {
+  if (confirm('Reset to default prompts? This will remove any custom prompts you\'ve added.')) {
+    localStorage.removeItem('prompt_clipboard_data');
+    prompts = [...DEFAULT_PROMPTS];
+    saveToStorage();
+    renderFilters();
+    renderPrompts();
+  }
+}
+
+// Init
+loadPrompts();
+renderFilters();
+renderPrompts();
+</script>
+</body>
+</html>
