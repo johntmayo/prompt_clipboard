@@ -252,6 +252,25 @@
 
   .add-form.visible { display: flex; }
 
+  .reset-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-top: 0.4rem;
+    transition: all 0.15s;
+    display: block;
+  }
+
+  .reset-btn:hover {
+    color: var(--text);
+    border-color: var(--border-hover);
+  }
+
   .add-form input, .add-form textarea, .add-form select {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
@@ -330,7 +349,7 @@
 <div class="container">
   <header>
     <h1>prompt_clipboard</h1>
-    <p>Click any prompt to copy. Add your own below. <span style="color:var(--text-muted);font-size:0.7rem;cursor:pointer;border-bottom:1px dashed var(--border)" onclick="resetDefaults()" title="Remove custom prompts and restore defaults">reset to defaults</span></p>
+    <p>Click any prompt to copy. Add your own below.</p>
   </header>
 
   <div class="filter-bar" id="filters"></div>
@@ -338,16 +357,14 @@
 
   <div class="add-section">
     <button class="add-btn" id="addBtn" onclick="toggleForm()">+ add prompt</button>
+    <button class="reset-btn" onclick="resetDefaults()">reset to defaults</button>
     <div class="add-form" id="addForm">
       <input type="text" id="newLabel" placeholder="Label (e.g. Handoff Doc)">
       <textarea id="newPrompt" placeholder="Prompt text..."></textarea>
       <select id="newTag">
-        <option value="context">context</option>
-        <option value="output">output</option>
-        <option value="review">review</option>
-        <option value="debug">debug</option>
-        <option value="workflow">workflow</option>
-        <option value="safety">safety</option>
+        <option value="before">before</option>
+        <option value="during">during</option>
+        <option value="after">after</option>
       </select>
       <div class="form-actions">
         <button class="btn-cancel" onclick="toggleForm()">cancel</button>
@@ -364,193 +381,70 @@ const CLIPBOARD_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" view
 const CHECK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
 
 const DEFAULT_PROMPTS = [
-  // ── YOUR ORIGINALS ──
-  {
-    id: 'd1',
-    label: 'Markdown Prompt Export',
-    text: 'Can you write this up in the form of a markdown prompt I can share with Cursor?',
-    tag: 'output'
-  },
-  {
-    id: 'd2',
-    label: 'Handoff Document',
-    text: 'Create a handoff document that captures all the key themes, decisions, open questions, and the current state of the project. Include enough context that a new AI session (or a teammate) could pick up where we left off.',
-    tag: 'workflow'
-  },
-  {
-    id: 'd3',
-    label: 'Codebase Familiarization',
-    text: 'Familiarize yourself with my codebase. Start by reading the project overview doc and directory structure, then summarize your understanding of the architecture before making any changes.',
-    tag: 'context'
-  },
-  {
-    id: 'd4',
-    label: 'Code Review',
-    text: 'Review this code for bugs, edge cases, performance issues, and readability. Don\'t refactor — just flag problems with brief explanations of why they matter.',
-    tag: 'review'
-  },
+  // ── BEFORE ──
   {
     id: 'd5',
     label: 'Explain Before Changing',
     text: 'Before writing any code, explain your plan in plain language. What will you change, why, and what are the tradeoffs? Wait for my approval before implementing.',
-    tag: 'workflow'
-  },
-  {
-    id: 'd6',
-    label: 'Minimal Fix Only',
-    text: 'Fix only the specific bug or issue described. Do not refactor surrounding code, rename variables, change formatting, or make any other improvements — no matter how tempting.',
-    tag: 'debug'
-  },
-  {
-    id: 'd7',
-    label: 'Summarize Current State',
-    text: 'Summarize what we\'ve done so far in this conversation, what\'s working, what\'s broken, and what the next steps should be.',
-    tag: 'workflow'
-  },
-  {
-    id: 'd8',
-    label: 'Think Step-by-Step',
-    text: 'Think through this step by step. Break the problem down, consider edge cases, and explain your reasoning before providing a solution.',
-    tag: 'debug'
-  },
-  {
-    id: 'd9',
-    label: 'Write Tests First',
-    text: 'Before implementing the feature, write the tests first. Define the expected behavior, edge cases, and failure modes. Then implement to make the tests pass.',
-    tag: 'workflow'
-  },
-  {
-    id: 'd10',
-    label: 'Don\'t Hallucinate APIs',
-    text: 'Only use APIs, methods, and libraries that you are confident exist. If you\'re unsure whether something is available, say so rather than guessing. I\'d rather you ask than fabricate.',
-    tag: 'context'
+    tag: 'before'
   },
   {
     id: 'd11',
     label: 'Scope Check',
     text: 'Before starting, tell me: What files will you need to touch? What\'s your understanding of the current behavior vs. desired behavior? Are there any dependencies or side effects I should know about?',
-    tag: 'context'
+    tag: 'before'
   },
-  {
-    id: 'd12',
-    label: 'Diff Only',
-    text: 'Show me only the lines that changed, with enough surrounding context to understand where they go. Don\'t output the entire file.',
-    tag: 'output'
-  },
-
-  // ── YOUR NEW PROMPT ──
-  {
-    id: 'd13',
-    label: 'Risk Assessment',
-    text: 'What risk is there to making these changes? Are you certain you understand all the angles and ramifications? Walk me through what could break, what depends on this code, and what assumptions you\'re making. If you\'re not fully certain, say so.',
-    tag: 'review'
-  },
-
-  // ── RESEARCH-BACKED ADDITIONS ──
-  // Context Engineering (Anthropic best practice: "intelligence is not the bottleneck, context is")
-  {
-    id: 'd14',
-    label: 'Set the Constraints',
-    text: 'Here are your constraints for this task: Use only the existing patterns and libraries already in the project. Do not introduce new dependencies. Match the naming conventions and code style you see in the codebase. If you need to deviate from any of these, explain why first.',
-    tag: 'context'
-  },
-  // From Cursor best practices: prevent scope creep by anchoring to existing code
-  {
-    id: 'd15',
-    label: 'Extend, Don\'t Rewrite',
-    text: 'Take this existing code and add the feature I\'m describing. Keep all existing logic intact. Don\'t rewrite or restructure what already works — build on top of it incrementally.',
-    tag: 'workflow'
-  },
-  // MIT Sloan: "prompt templates as cognitive scaffolding" + problem formulation over prompt perfection
-  {
-    id: 'd16',
-    label: 'Define the Problem First',
-    text: 'Before proposing a solution, restate the problem in your own words. What exactly are we trying to solve? What\'s the scope and what\'s out of scope? What does success look like? Then propose your approach.',
-    tag: 'workflow'
-  },
-  // Anthropic: multi-context-window workflows — progress files & structured state
-  {
-    id: 'd17',
-    label: 'Progress Checkpoint',
-    text: 'Write a progress checkpoint. Summarize: (1) what\'s been completed and is working, (2) what\'s in progress, (3) known issues or bugs, (4) clear next steps. Format it so someone starting a fresh session could pick this up immediately.',
-    tag: 'workflow'
-  },
-  // From research: few-shot prompting massively improves accuracy
-  {
-    id: 'd18',
-    label: 'Match This Pattern',
-    text: 'Here\'s an example of the pattern/style I want you to follow: [paste example]. Now apply that same pattern to the new task I\'m about to describe. Match the structure, naming, and level of detail as closely as possible.',
-    tag: 'context'
-  },
-  // Anthropic engineering blog: "Claude tended to mark a feature as complete without proper testing"
-  {
-    id: 'd19',
-    label: 'Verify End-to-End',
-    text: 'Don\'t just check that the code compiles or passes unit tests. Walk through the entire user flow end-to-end and verify that the feature works as a real user would experience it. Flag anything that feels broken or incomplete, even if the code looks correct.',
-    tag: 'review'
-  },
-  // Context engineering: giving the model explicit identity and role boundaries
-  {
-    id: 'd20',
-    label: 'You Are a Cautious Senior Dev',
-    text: 'Approach this like a cautious senior developer doing a production deploy on a Friday. Prioritize stability over cleverness. Flag anything you\'re unsure about. Prefer boring, proven solutions over elegant but risky ones.',
-    tag: 'context'
-  },
-  // Chain-of-thought + self-consistency: multiple reasoning paths
-  {
-    id: 'd21',
-    label: 'Consider Alternatives',
-    text: 'Before committing to an approach, briefly outline 2-3 different ways to solve this. List the tradeoffs of each (complexity, performance, maintainability). Then recommend one and explain why.',
-    tag: 'debug'
-  },
-  // From prompt research: explicit output format specification
-  {
-    id: 'd22',
-    label: 'CLAUDE.md / Cursor Rules Export',
-    text: 'Take the conventions, patterns, and decisions we\'ve established in this conversation and write them as a CLAUDE.md (or .cursorrules) file I can put in my project root. Include coding style, architecture decisions, key libraries, and any rules about how AI should behave in this codebase.',
-    tag: 'output'
-  },
-  // Anthropic: "ask 1-2 key questions right away" — get AI to surface its own uncertainty
   {
     id: 'd23',
     label: 'Ask Before You Assume',
     text: 'If anything about this request is ambiguous or could be interpreted multiple ways, ask me 1-2 clarifying questions before proceeding. Don\'t guess at requirements — I\'d rather answer a quick question than undo wrong assumptions.',
-    tag: 'workflow'
+    tag: 'before'
   },
-  // Security review — from coding AI best practices
+
+  // ── DURING ──
   {
-    id: 'd24',
-    label: 'Security Audit',
-    text: 'Review this code specifically for security vulnerabilities: injection risks, authentication/authorization gaps, exposed secrets, unsafe data handling, and CORS issues. Rate each finding by severity and suggest a fix.',
-    tag: 'review'
+    id: 'd6',
+    label: 'Minimal Fix Only',
+    text: 'Fix only the specific bug or issue described. Do not refactor surrounding code, rename variables, change formatting, or make any other improvements — no matter how tempting.',
+    tag: 'during'
   },
-  // Inspired by MIT CSAIL research on AI for SE: "the undergrad programming part" vs real engineering
-  {
-    id: 'd25',
-    label: 'Think Like an Engineer, Not a Coder',
-    text: 'Don\'t just write code that works. Consider: How will this be maintained? How does it handle failure? What happens at scale? What will confuse the next developer who reads this? Write code that a team can live with long-term.',
-    tag: 'review'
-  },
-  // Debugging: "here's what I expect vs what's happening"
-  {
-    id: 'd26',
-    label: 'Expected vs. Actual',
-    text: 'Here\'s the bug: I expected [X] but I\'m getting [Y]. Here\'s the relevant code: [paste]. Don\'t rewrite everything — just identify the root cause and suggest the minimal fix.',
-    tag: 'debug'
-  },
-  // From Anthropic harness patterns: structured incremental work
-  {
-    id: 'd27',
-    label: 'One Thing at a Time',
-    text: 'Let\'s work on this incrementally. Do one small, complete change at a time. After each change, verify it works before moving on. Don\'t try to do everything in a single pass.',
-    tag: 'workflow'
-  },
-  // Preventing over-eager AI: "Check with me before adding complex features"
   {
     id: 'd28',
     label: 'Stay in Your Lane',
     text: 'Only change what I\'ve asked you to change. Do not "improve" other parts of the code you happen to notice. Do not add features I didn\'t request. Do not update formatting or style in files I didn\'t mention. Stay focused.',
-    tag: 'context'
+    tag: 'during'
+  },
+  {
+    id: 'd27',
+    label: 'One Thing at a Time',
+    text: 'Let\'s work on this incrementally. Do one small, complete change at a time. After each change, verify it works before moving on. Don\'t try to do everything in a single pass.',
+    tag: 'during'
+  },
+  {
+    id: 'd26',
+    label: 'Expected vs. Actual',
+    text: 'Here\'s the bug: I expected [X] but I\'m getting [Y]. Here\'s the relevant code: [paste]. Don\'t rewrite everything — just identify the root cause and suggest the minimal fix.',
+    tag: 'during'
+  },
+
+  // ── AFTER ──
+  {
+    id: 'd4',
+    label: 'Code Review',
+    text: 'Review this code for bugs, edge cases, performance issues, and readability. Don\'t refactor — just flag problems with brief explanations of why they matter.',
+    tag: 'after'
+  },
+  {
+    id: 'd13',
+    label: 'Risk Assessment',
+    text: 'What risk is there to making these changes? Are you certain you understand all the angles and ramifications? Walk me through what could break, what depends on this code, and what assumptions you\'re making. If you\'re not fully certain, say so.',
+    tag: 'after'
+  },
+  {
+    id: 'd2',
+    label: 'Handoff Document',
+    text: 'Create a handoff document that captures all the key themes, decisions, open questions, and the current state of the project. Include enough context that a new AI session (or a teammate) could pick up where we left off.',
+    tag: 'after'
   }
 ];
 
