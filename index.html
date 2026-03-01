@@ -316,6 +316,19 @@
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+
+  /* ── Desktop: 3-column grid ── */
+  @media (min-width: 900px) {
+    .container { max-width: 1180px; }
+    .filter-bar { display: none; }
+    .prompt-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+    .phase-section { gap: 0.5rem; }
+  }
 </style>
 </head>
 <body>
@@ -396,7 +409,13 @@ function renderFilters() {
   ).join('');
 }
 
-function setFilter(tag) { activeFilter = tag; renderFilters(); renderPrompts(); }
+function setFilter(tag) { activeFilter = tag; renderFilters(); applyFilter(); }
+
+function applyFilter() {
+  document.querySelectorAll('.phase-section').forEach(s => {
+    s.style.display = (activeFilter === 'all' || s.classList.contains('phase-' + activeFilter)) ? '' : 'none';
+  });
+}
 
 function escapeHtml(t) {
   const d = document.createElement('div');
@@ -416,33 +435,30 @@ function renderCard(p, delay) {
 
 function renderPrompts() {
   const container = document.getElementById('promptList');
-  const filtered = activeFilter === 'all' ? prompts : prompts.filter(p => p.tag === activeFilter);
 
-  if (!filtered.length) {
+  if (!prompts.length) {
     container.innerHTML = '<div class="empty-state">No prompts here yet.</div>';
     return;
   }
 
-  if (activeFilter === 'all') {
-    const groups = {};
-    filtered.forEach(p => { (groups[p.tag] = groups[p.tag] || []).push(p); });
-    const ordered = [
-      ...PHASE_ORDER.filter(t => groups[t]),
-      ...Object.keys(groups).filter(t => !PHASE_ORDER.includes(t))
-    ];
-    let delay = 0;
-    container.innerHTML = ordered.map(phase =>
-      `<div class="phase-section phase-${phase}">
-        <div class="phase-header">
-          <div class="phase-num">${PHASE_NUMS[phase] || '—'}</div>
-          <span class="phase-label">${phase}</span>
-        </div>
-        ${groups[phase].map(p => renderCard(p, delay++)).join('')}
-      </div>`
-    ).join('');
-  } else {
-    container.innerHTML = filtered.map((p, i) => renderCard(p, i)).join('');
-  }
+  const groups = {};
+  prompts.forEach(p => { (groups[p.tag] = groups[p.tag] || []).push(p); });
+  const ordered = [
+    ...PHASE_ORDER.filter(t => groups[t]),
+    ...Object.keys(groups).filter(t => !PHASE_ORDER.includes(t))
+  ];
+  let delay = 0;
+  container.innerHTML = ordered.map(phase =>
+    `<div class="phase-section phase-${phase}">
+      <div class="phase-header">
+        <div class="phase-num">${PHASE_NUMS[phase] || '—'}</div>
+        <span class="phase-label">${phase}</span>
+      </div>
+      ${groups[phase].map(p => renderCard(p, delay++)).join('')}
+    </div>`
+  ).join('');
+
+  applyFilter();
 }
 
 async function copyPrompt(id) {
