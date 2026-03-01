@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prompt fjfjfjfjClipboard</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Prompt Clipboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,900&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:           #0f0f12;
-    --surface:      #181820;
-    --surface-hover:#1e1e28;
-    --border:       #2a2a38;
-    --border-hover: #3d3d52;
-    --text:         #eeedf5;
-    --text-soft:    #9896ae;
-    --text-muted:   #5c5a72;
-    --before:       #3b82f6;
-    --during:       #f59e0b;
-    --after:        #a855f7;
-    --accent:       #a3e635;
-    --accent-dim:   rgba(163,230,53,0.08);
-    --copied:       #34d399;
-    --radius:       11px;
+    --bg:           #F3EDE1;
+    --surface-hover: rgba(17,17,23,0.04);
+    --border:       #C8C0AD;
+    --text:         #111117;
+    --text-soft:    #48465E;
+    --text-muted:   #9490A8;
+    --before:       #1847F0;
+    --before-tint:  rgba(24,71,240,0.06);
+    --during:       #D45E00;
+    --during-tint:  rgba(212,94,0,0.06);
+    --after:        #C42020;
+    --after-tint:   rgba(196,32,32,0.06);
+    --accent:       #1847F0;
+    --accent-dim:   rgba(24,71,240,0.08);
+    --copied:       #0A7A5A;
+    --copied-tint:  rgba(10,122,90,0.07);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,97 +30,141 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Syne', system-ui, sans-serif;
     min-height: 100vh;
-    padding: 3rem 2rem 5rem;
+    padding: 3.5rem 1.5rem 7rem;
+    overflow-x: hidden;
   }
 
-  .container { max-width: 680px; margin: 0 auto; }
+  /* Grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.038;
+    mix-blend-mode: multiply;
+  }
+
+  .container { max-width: 700px; margin: 0 auto; }
 
   /* ── Header ── */
-  header { margin-bottom: 3rem; }
+  header {
+    margin-bottom: 3rem;
+    animation: fadeUp 0.4s ease both;
+  }
 
   .header-kicker {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.63rem;
     font-weight: 500;
     color: var(--accent);
-    letter-spacing: 0.12em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    margin-bottom: 0.65rem;
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .header-kicker::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    flex-shrink: 0;
   }
 
   header h1 {
-    font-size: 1.55rem;
-    font-weight: 700;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(3rem, 8vw, 5rem);
     color: var(--text);
-    letter-spacing: -0.03em;
-    line-height: 1.2;
-    margin-bottom: 0.65rem;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    margin-bottom: 1.5rem;
   }
 
-  .header-rule { height: 1px; background: var(--border); margin-bottom: 0.65rem; }
+  .header-rule {
+    height: 2px;
+    background: var(--text);
+    margin-bottom: 0.75rem;
+  }
 
-  header p { font-size: 0.82rem; color: var(--text-muted); }
+  header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
 
   /* ── Filters ── */
   .filter-bar {
     display: flex;
-    gap: 0.35rem;
-    margin-bottom: 3rem;
+    gap: 0.4rem;
+    margin-bottom: 2.5rem;
     flex-wrap: wrap;
+    animation: fadeUp 0.4s 0.06s ease both;
   }
 
   .filter-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 500;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 700;
     padding: 0.38rem 0.9rem;
-    border-radius: 100px;
-    border: 1px solid var(--border);
+    border-radius: 0;
+    border: 1.5px solid var(--border);
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.15s ease;
-    text-transform: capitalize;
+    transition: all 0.12s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
     user-select: none;
   }
 
-  .filter-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .filter-btn:hover {
+    border-color: var(--text);
+    color: var(--text);
+  }
 
   .filter-btn.active {
-    background: var(--accent-dim);
-    border-color: var(--accent);
-    color: var(--accent);
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
   }
 
   /* ── Phase sections ── */
-  .prompt-list { display: flex; flex-direction: column; gap: 3.5rem; }
+  .prompt-list { display: flex; flex-direction: column; gap: 3rem; }
 
-  .phase-section { display: flex; flex-direction: column; gap: 0.5rem; }
+  .phase-section { display: flex; flex-direction: column; gap: 0; }
 
-  /* The editorial section header */
-  .phase-header { margin-bottom: 1rem; }
+  .phase-header { margin-bottom: 0.75rem; }
 
   .phase-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 2.75rem;
-    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    font-size: 5rem;
+    font-weight: 800;
     line-height: 1;
-    letter-spacing: -0.05em;
-    margin-bottom: 0.2rem;
-    opacity: 0.9;
+    letter-spacing: -0.07em;
   }
 
   .phase-label {
     display: block;
-    font-size: 0.64rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    padding-bottom: 0.65rem;
-    border-bottom: 1.5px solid currentColor;
-    opacity: 0.8;
+    padding: 0.45rem 0;
+    border-top: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    margin-top: 0.2rem;
+    margin-bottom: 0.75rem;
   }
 
   .phase-before .phase-num,
@@ -128,51 +173,62 @@
   .phase-during .phase-num,
   .phase-during .phase-label { color: var(--during); }
 
-  .phase-after  .phase-num,
-  .phase-after  .phase-label { color: var(--after); }
+  .phase-after .phase-num,
+  .phase-after .phase-label { color: var(--after); }
 
   /* ── Cards ── */
   .prompt-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.1rem 1.1rem 1.1rem 1.2rem;
+    background: transparent;
+    border-top: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    padding: 0.9rem 0.8rem 0.9rem 0.9rem;
     cursor: pointer;
-    transition: all 0.16s ease;
+    transition: background 0.14s ease, border-left-color 0.14s ease;
     display: flex;
     align-items: flex-start;
-    gap: 0.85rem;
-    animation: fadeUp 0.18s ease both;
+    gap: 0.8rem;
+    animation: fadeUp 0.22s ease both;
   }
 
-  .prompt-card:hover {
-    background: var(--surface-hover);
-    border-color: var(--border-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 22px rgba(0,0,0,0.4);
+  .prompt-card:last-child {
+    border-bottom: 1px solid var(--border);
   }
 
-  .prompt-card:active { transform: none; box-shadow: none; }
+  /* Phase color left borders */
+  .phase-before .prompt-card { border-left-color: var(--before); }
+  .phase-during .prompt-card { border-left-color: var(--during); }
+  .phase-after  .prompt-card { border-left-color: var(--after); }
 
-  .prompt-card.copied {
-    border-color: var(--copied) !important;
-    box-shadow: 0 0 0 1px var(--copied), 0 0 18px rgba(52,211,153,0.1) !important;
-  }
+  /* Phase hover tints */
+  .phase-before .prompt-card:hover { background: var(--before-tint); }
+  .phase-during .prompt-card:hover { background: var(--during-tint); }
+  .phase-after  .prompt-card:hover { background: var(--after-tint); }
+
+  /* Copied state */
+  .phase-before .prompt-card.copied { background: var(--before-tint) !important; }
+  .phase-during .prompt-card.copied { background: var(--during-tint) !important; }
+  .phase-after  .prompt-card.copied { background: var(--after-tint)  !important; }
+
+  .prompt-card.copied { animation: copyPulse 0.28s ease; }
 
   .prompt-content { flex: 1; min-width: 0; }
 
   .prompt-label {
-    font-size: 0.93rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text);
     margin-bottom: 0.3rem;
     line-height: 1.3;
+    letter-spacing: 0.01em;
   }
 
   .prompt-text {
-    font-size: 0.81rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 400;
     color: var(--text-soft);
-    line-height: 1.65;
+    line-height: 1.72;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -187,19 +243,21 @@
 
   .copy-icon {
     flex-shrink: 0;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 7px;
     color: var(--text-muted);
-    transition: all 0.15s;
-    margin-top: 0.05rem;
+    transition: color 0.12s;
+    margin-top: 0.04rem;
   }
 
-  .prompt-card:hover .copy-icon { color: var(--accent); background: var(--accent-dim); }
-  .prompt-card.copied .copy-icon { color: var(--copied); background: rgba(52,211,153,0.08); }
+  .phase-before .prompt-card:hover .copy-icon { color: var(--before); }
+  .phase-during .prompt-card:hover .copy-icon { color: var(--during); }
+  .phase-after  .prompt-card:hover .copy-icon { color: var(--after); }
+  .prompt-card.copied .copy-icon { color: var(--copied); }
+
   .copy-icon svg { width: 15px; height: 15px; }
 
   /* ── Toast ── */
@@ -207,17 +265,19 @@
     position: fixed;
     bottom: 2rem;
     left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--copied);
-    color: #0f0f12;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.5rem 1.1rem;
-    border-radius: 100px;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 0.55rem 1.15rem;
+    border-radius: 0;
     pointer-events: none;
     opacity: 0;
-    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
     z-index: 100;
   }
 
@@ -225,115 +285,166 @@
 
   /* ── Add section ── */
   .add-section {
-    margin-top: 3.5rem;
-    padding-top: 1.75rem;
-    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    max-width: 560px;
   }
 
   .add-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.81rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
     font-weight: 500;
-    padding: 0.65rem 1rem;
-    border-radius: var(--radius);
-    border: 1px dashed var(--border);
+    letter-spacing: 0.1em;
+    padding: 0.8rem 1rem;
+    border-radius: 0;
+    border: 1.5px dashed var(--border);
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
     width: 100%;
-    transition: all 0.15s;
+    transition: all 0.12s;
+    text-align: center;
+    text-transform: uppercase;
   }
 
-  .add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .add-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    border-style: solid;
+  }
 
-  .add-form { display: none; flex-direction: column; gap: 0.6rem; }
+  .add-form { display: none; flex-direction: column; gap: 0.5rem; }
   .add-form.visible { display: flex; }
 
   .reset-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.71rem;
-    padding: 0.3rem 0.65rem;
-    border-radius: 6px;
-    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.63rem;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0;
+    border: none;
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    margin-top: 0.5rem;
-    transition: all 0.15s;
-    display: block;
+    transition: color 0.12s;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border);
   }
 
-  .reset-btn:hover { color: var(--text); border-color: var(--border-hover); }
+  .reset-btn:hover {
+    color: var(--after);
+    text-decoration-color: var(--after);
+  }
 
   .add-form input,
   .add-form textarea,
   .add-form select {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Syne', sans-serif;
     font-size: 0.82rem;
-    padding: 0.65rem 0.9rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface);
+    font-weight: 400;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0;
+    border: 1.5px solid var(--border);
+    background: transparent;
     color: var(--text);
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.12s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .add-form select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%239490A8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-color: transparent;
+    padding-right: 2.25rem;
+    cursor: pointer;
   }
 
   .add-form input::placeholder,
   .add-form textarea::placeholder { color: var(--text-muted); }
+
   .add-form input:focus,
-  .add-form textarea:focus { border-color: var(--accent); }
-  .add-form textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
-  .add-form select { cursor: pointer; }
+  .add-form textarea:focus,
+  .add-form select:focus { border-color: var(--accent); }
+
+  .add-form textarea { resize: vertical; min-height: 90px; line-height: 1.65; }
 
   .form-actions { display: flex; gap: 0.4rem; justify-content: flex-end; }
 
   .form-actions button {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.69rem;
     font-weight: 500;
-    padding: 0.5rem 1.05rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
+    letter-spacing: 0.07em;
+    padding: 0.52rem 1.1rem;
+    border-radius: 0;
+    border: 1.5px solid var(--border);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.12s;
+    text-transform: uppercase;
   }
 
   .btn-cancel { background: transparent; color: var(--text-muted); }
-  .btn-cancel:hover { color: var(--text); border-color: var(--border-hover); }
+  .btn-cancel:hover { color: var(--text); border-color: var(--text); }
 
   .btn-save {
-    background: var(--accent);
-    color: #0f0f12;
-    border-color: var(--accent);
-    font-weight: 700;
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+    font-weight: 600;
   }
 
-  .btn-save:hover { filter: brightness(1.1); }
+  .btn-save:hover { background: var(--accent); border-color: var(--accent); }
 
   .empty-state {
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateY(7px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes copyPulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(0.988); }
+    100% { transform: scale(1); }
   }
 
   /* ── Desktop: 3-column grid ── */
   @media (min-width: 900px) {
     .container { max-width: 1180px; }
+
     .filter-bar { display: none; }
+
+    header h1 { font-size: clamp(3rem, 5.5vw, 5.5rem); }
+
     .prompt-list {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
+      gap: 0;
       align-items: start;
     }
-    .phase-section { gap: 0.5rem; }
+
+    .phase-section {
+      padding: 0 2.5rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .phase-section:first-child { padding-left: 0; }
+    .phase-section:last-child  { padding-right: 0; border-right: none; }
   }
 </style>
 </head>
@@ -356,11 +467,7 @@
     <div class="add-form" id="addForm">
       <input type="text" id="newLabel" placeholder="Label (e.g. Handoff Doc)">
       <textarea id="newPrompt" placeholder="Prompt text..."></textarea>
-      <select id="newTag">
-        <option value="before">before</option>
-        <option value="during">during</option>
-        <option value="after">after</option>
-      </select>
+      <select id="newTag"></select>
       <div class="form-actions">
         <button class="btn-cancel" onclick="toggleForm()">cancel</button>
         <button class="btn-save" onclick="savePrompt()">save</button>
@@ -497,7 +604,12 @@ function toggleForm() {
   const btn  = document.getElementById('addBtn');
   const vis  = form.classList.toggle('visible');
   btn.style.display = vis ? 'none' : 'block';
-  if (vis) document.getElementById('newLabel').focus();
+  if (vis) {
+    const tags = [...new Set(prompts.map(p => p.tag))].sort();
+    const sel  = document.getElementById('newTag');
+    sel.innerHTML = tags.map(t => `<option value="${t}">${t}</option>`).join('');
+    document.getElementById('newLabel').focus();
+  }
 }
 
 function savePrompt() {
