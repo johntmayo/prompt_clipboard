@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Clipboard</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0e0e10;
@@ -97,17 +97,41 @@
     color: var(--accent);
   }
 
+  /* Phase section grouping */
   .prompt-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0;
   }
 
+  .phase-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .phase-section + .phase-section {
+    margin-top: 1.75rem;
+  }
+
+  .phase-header {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Cards */
   .prompt-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 0.9rem 1rem;
+    padding: 1rem 1.1rem;
     cursor: pointer;
     transition: all 0.15s ease;
     position: relative;
@@ -137,31 +161,18 @@
   }
 
   .prompt-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text);
     margin-bottom: 0.3rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .prompt-tag {
-    font-size: 0.6rem;
-    font-weight: 500;
-    padding: 0.15rem 0.45rem;
-    border-radius: 4px;
-    background: var(--tag-bg);
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    line-height: 1.3;
   }
 
   .prompt-text {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     color: var(--text-muted);
-    line-height: 1.5;
+    line-height: 1.55;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -380,6 +391,8 @@
 const CLIPBOARD_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`;
 const CHECK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
 
+const PHASE_ORDER = ['before', 'during', 'after'];
+
 const DEFAULT_PROMPTS = [
   // ── BEFORE ──
   {
@@ -484,6 +497,16 @@ function setFilter(tag) {
   renderPrompts();
 }
 
+function renderCard(p, delayIndex) {
+  return `<div class="prompt-card" id="card-${p.id}" onclick="copyPrompt('${p.id}')" style="animation-delay: ${delayIndex * 0.03}s" title="Click to copy">
+    <div class="prompt-content">
+      <div class="prompt-label">${p.label}</div>
+      <div class="prompt-text">${escapeHtml(p.text)}</div>
+    </div>
+    <div class="copy-icon" id="icon-${p.id}">${CLIPBOARD_ICON}</div>
+  </div>`;
+}
+
 function renderPrompts() {
   const container = document.getElementById('promptList');
   const filtered = activeFilter === 'all' ? prompts : prompts.filter(p => p.tag === activeFilter);
@@ -493,18 +516,31 @@ function renderPrompts() {
     return;
   }
 
-  container.innerHTML = filtered.map((p, i) =>
-    `<div class="prompt-card" id="card-${p.id}" onclick="copyPrompt('${p.id}')" style="animation-delay: ${i * 0.03}s" title="Click to copy">
-      <div class="prompt-content">
-        <div class="prompt-label">
-          ${p.label}
-          <span class="prompt-tag">${p.tag}</span>
-        </div>
-        <div class="prompt-text">${escapeHtml(p.text)}</div>
-      </div>
-      <div class="copy-icon" id="icon-${p.id}">${CLIPBOARD_ICON}</div>
-    </div>`
-  ).join('');
+  if (activeFilter === 'all') {
+    // Group by phase in canonical order
+    const groups = {};
+    filtered.forEach(p => {
+      if (!groups[p.tag]) groups[p.tag] = [];
+      groups[p.tag].push(p);
+    });
+
+    const orderedTags = [
+      ...PHASE_ORDER.filter(t => groups[t]),
+      ...Object.keys(groups).filter(t => !PHASE_ORDER.includes(t))
+    ];
+
+    let delay = 0;
+    container.innerHTML = orderedTags.map(phase => {
+      const cards = groups[phase];
+      const cardHtml = cards.map(p => renderCard(p, delay++)).join('');
+      return `<div class="phase-section">
+        <div class="phase-header">${phase}</div>
+        ${cardHtml}
+      </div>`;
+    }).join('');
+  } else {
+    container.innerHTML = filtered.map((p, i) => renderCard(p, i)).join('');
+  }
 }
 
 function escapeHtml(text) {
