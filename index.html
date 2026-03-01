@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Prompt Clipboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,900&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -448,7 +448,113 @@
     100% { transform: scale(1); }
   }
 
-  /* ── Desktop: 3-column grid ── */
+  /* ── Mobile Optimizations ── */
+  @media (max-width: 899px) {
+    body {
+      padding: 2.5rem 1rem calc(6rem + env(safe-area-inset-bottom));
+    }
+
+    /* Always show full prompt text — hover doesn't exist on touch */
+    .prompt-text {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+    }
+
+    /* Horizontal-scrolling filter bar, no wrap */
+    .filter-bar {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 0.25rem;
+      mask-image: linear-gradient(to right, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-btn {
+      flex-shrink: 0;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Slightly roomier cards for touch */
+    .prompt-card {
+      padding: 1rem 0.75rem 1rem 0.9rem;
+    }
+
+    /* Phase-colored active/tap states (mirrors desktop hover) */
+    .phase-before   .prompt-card:active { background: var(--before-tint); }
+    .phase-during   .prompt-card:active { background: var(--during-tint); }
+    .phase-after    .prompt-card:active { background: var(--after-tint);  }
+    .phase-output   .prompt-card:active { background: var(--before-tint); }
+    .phase-workflow .prompt-card:active { background: var(--during-tint); }
+    .phase-context  .prompt-card:active { background: rgba(123,63,190,0.06); }
+    .phase-review   .prompt-card:active { background: var(--copied-tint); }
+    .phase-debug    .prompt-card:active { background: var(--after-tint);  }
+
+    /* Active icon color (mirrors desktop hover) */
+    .phase-before   .prompt-card:active .copy-icon { color: var(--before); }
+    .phase-during   .prompt-card:active .copy-icon { color: var(--during); }
+    .phase-after    .prompt-card:active .copy-icon { color: var(--after);  }
+    .phase-output   .prompt-card:active .copy-icon { color: var(--before); }
+    .phase-workflow .prompt-card:active .copy-icon { color: var(--during); }
+    .phase-context  .prompt-card:active .copy-icon { color: #7B3FBE; }
+    .phase-review   .prompt-card:active .copy-icon { color: var(--copied); }
+    .phase-debug    .prompt-card:active .copy-icon { color: var(--after);  }
+
+    /* Prevent iOS from zooming into form inputs (requires ≥16px) */
+    .add-form input,
+    .add-form textarea,
+    .add-form select {
+      font-size: 1rem;
+    }
+
+    /* Stack form buttons full-width, save on top */
+    .form-actions {
+      flex-direction: column-reverse;
+      gap: 0.45rem;
+    }
+    .form-actions button {
+      width: 100%;
+      min-height: 46px;
+      justify-content: center;
+      text-align: center;
+    }
+
+    /* Phase number a touch smaller on narrow screens */
+    .phase-num { font-size: 3.5rem; }
+
+    /* Toast respects home indicator */
+    .toast {
+      bottom: calc(1.5rem + env(safe-area-inset-bottom));
+      max-width: calc(100vw - 2rem);
+    }
+
+    /* ── Bento grid (mobile) ── */
+    .prompt-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .phase-section {
+      background: var(--bg);
+      padding: 1.1rem;
+    }
+    /* output + context sit side by side in row 1 */
+    .phase-output   { grid-column: 1; grid-row: 1; }
+    .phase-context  { grid-column: 2; grid-row: 1; }
+    /* workflow is the hero — full width center row */
+    .phase-workflow { grid-column: 1 / -1; grid-row: 2; }
+    /* review + debug split the bottom row */
+    .phase-review   { grid-column: 1; grid-row: 3; }
+    .phase-debug    { grid-column: 2; grid-row: 3; }
+  }
+
+  /* ── Desktop: true bento grid ── */
   @media (min-width: 900px) {
     .container { max-width: 1180px; }
 
@@ -456,20 +562,26 @@
 
     header h1 { font-size: clamp(3rem, 5.5vw, 5.5rem); }
 
+    /* Asymmetric bento — workflow anchors the center, spans both rows */
     .prompt-list {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      align-items: start;
+      grid-template-columns: 1fr 1.8fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
     }
 
     .phase-section {
-      padding: 0 2.5rem;
-      border-right: 1px solid var(--border);
+      background: var(--bg);
+      padding: 2rem;
     }
 
-    .phase-section:first-child { padding-left: 0; }
-    .phase-section:last-child  { padding-right: 0; border-right: none; }
+    .phase-output   { grid-column: 1; grid-row: 1; }
+    .phase-workflow { grid-column: 2; grid-row: 1 / 3; } /* center anchor, spans both rows */
+    .phase-context  { grid-column: 1; grid-row: 2; }
+    .phase-review   { grid-column: 3; grid-row: 1; }
+    .phase-debug    { grid-column: 3; grid-row: 2; }
   }
 </style>
 </head>
