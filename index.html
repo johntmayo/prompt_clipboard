@@ -7,21 +7,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,900&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:           #F3EDE1;
+    --bg:            #F3EDE1;
     --surface-hover: rgba(17,17,23,0.04);
-    --border:       #C8C0AD;
-    --text:         #111117;
-    --text-soft:    #48465E;
-    --text-muted:   #9490A8;
-    --before:       #1847F0;
-    --before-tint:  rgba(24,71,240,0.06);
-    --during:       #D45E00;
-    --during-tint:  rgba(212,94,0,0.06);
-    --after:        #C42020;
-    --after-tint:   rgba(196,32,32,0.06);
-    --accent:       #1847F0;
-    --copied:       #0A7A5A;
-    --copied-tint:  rgba(10,122,90,0.07);
+    --border:        #C8C0AD;
+    --text:          #111117;
+    --text-soft:     #48465E;
+    --text-muted:    #9490A8;
+    --before:        #1847F0;
+    --before-tint:   rgba(24,71,240,0.06);
+    --during:        #D45E00;
+    --during-tint:   rgba(212,94,0,0.06);
+    --after:         #C42020;
+    --after-tint:    rgba(196,32,32,0.06);
+    --accent:        #1847F0;
+    --copied:        #0A7A5A;
+    --copied-tint:   rgba(10,122,90,0.07);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -129,28 +129,26 @@
   .filter-btn:hover { border-color: var(--text); color: var(--text); }
   .filter-btn.active { background: var(--text); border-color: var(--text); color: var(--bg); }
 
-  /* ── Phase sections ── */
-  .prompt-list { display: flex; flex-direction: column; gap: 3rem; }
+  /* ── Prompt list (animated wrapper) ── */
+  .prompt-list { animation: fadeUp 0.4s 0.1s ease both; }
 
-  /* Default phase color fallback for custom/unknown tags */
+  /* ── Phase sections (base — shared between mobile and desktop) ── */
   .phase-section {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    background: var(--bg);
     --phase-color: var(--text-muted);
-    --phase-tint: var(--surface-hover);
+    --phase-tint:  var(--surface-hover);
   }
 
-  /* Per-phase color tokens — single source of truth */
+  /* Per-phase color tokens */
   .phase-output   { --phase-color: var(--before);  --phase-tint: var(--before-tint); }
   .phase-workflow { --phase-color: var(--during);   --phase-tint: var(--during-tint); }
   .phase-context  { --phase-color: #7B3FBE;         --phase-tint: rgba(123,63,190,0.06); }
   .phase-review   { --phase-color: var(--copied);   --phase-tint: var(--copied-tint); }
   .phase-debug    { --phase-color: var(--after);    --phase-tint: var(--after-tint); }
 
-  /* ── Category header (replaces the numbered system) ── */
-  .phase-header { margin-bottom: 0; }
-
+  /* ── Category header ── */
   .phase-name {
     font-family: 'Syne', sans-serif;
     font-size: 1.3rem;
@@ -183,9 +181,8 @@
   }
 
   .prompt-card:last-child { border-bottom: 1px solid var(--border); }
-
-  .prompt-card:hover  { background: var(--phase-tint); }
-  .prompt-card.copied { background: var(--phase-tint) !important; animation: copyPulse 0.28s ease; }
+  .prompt-card:hover       { background: var(--phase-tint); }
+  .prompt-card.copied      { background: var(--phase-tint) !important; animation: copyPulse 0.28s ease; }
 
   .prompt-content { flex: 1; min-width: 0; }
 
@@ -231,7 +228,6 @@
 
   .prompt-card:hover .copy-icon  { color: var(--phase-color); }
   .prompt-card.copied .copy-icon { color: var(--copied) !important; }
-
   .copy-icon svg { width: 15px; height: 15px; }
 
   /* ── Toast ── */
@@ -370,7 +366,12 @@
     100% { transform: scale(1); }
   }
 
-  /* ── Mobile ── */
+  /* ─────────────────────────────────────────────
+     MOBILE  ≤ 899px
+     Single-column list. bento-col wrappers become
+     transparent (display:contents) so phase-sections
+     flow as direct block children of prompt-list.
+  ───────────────────────────────────────────── */
   @media (max-width: 899px) {
     body { padding: 2.5rem 1rem calc(6rem + env(safe-area-inset-bottom)); }
 
@@ -394,9 +395,22 @@
     .filter-bar::-webkit-scrollbar { display: none; }
     .filter-btn { flex-shrink: 0; min-height: 40px; display: flex; align-items: center; }
 
-    .prompt-card { padding: 1rem 0.75rem 1rem 0.9rem; }
+    /* Flat single-column list */
+    .prompt-list {
+      display: block;
+      border: 1px solid var(--border);
+    }
 
-    /* Touch active states */
+    /* Column wrappers vanish — children flow directly */
+    .bento-col { display: contents; }
+
+    .phase-section {
+      padding: 1.1rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Touch feedback */
+    .prompt-card { padding: 1rem 0.75rem 1rem 0.9rem; }
     .prompt-card:active { background: var(--phase-tint); }
     .prompt-card:active .copy-icon { color: var(--phase-color); }
 
@@ -408,34 +422,16 @@
     .form-actions button { width: 100%; min-height: 46px; justify-content: center; text-align: center; }
 
     .toast { bottom: calc(1.5rem + env(safe-area-inset-bottom)); max-width: calc(100vw - 2rem); }
-
-    /* ── Mobile bento ──
-       Row 1: Output | Context  (two narrower categories)
-       Row 2: Workflow           (hero, full-width)
-       Row 3: Review  | Debug   (two narrower categories)
-    */
-    .prompt-list {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-    .phase-section { background: var(--bg); padding: 1.1rem; }
-
-    .phase-output   { grid-column: 1;    grid-row: 1; }
-    .phase-context  { grid-column: 2;    grid-row: 1; }
-    .phase-workflow { grid-column: 1/-1; grid-row: 2; }
-    .phase-review   { grid-column: 1;    grid-row: 3; }
-    .phase-debug    { grid-column: 2;    grid-row: 3; }
   }
 
-  /* ── Desktop bento ──
-     Three semantic columns:
-       Left  — Output (top) + Context (bottom)  : pre-writing
-       Center — Workflow (full height)           : the doing
-       Right  — Review (top) + Debug (bottom)   : quality checks
-  */
+  /* ─────────────────────────────────────────────
+     DESKTOP  ≥ 900px
+     True bento: 3 equal columns, no auto-row sizing.
+     Each column is a flex column; left holds Output+Context,
+     center holds Workflow, right holds Review+Debug.
+     The last section in each column grows to fill remaining
+     height so the grid always forms a clean rectangle.
+  ───────────────────────────────────────────── */
   @media (min-width: 900px) {
     .container { max-width: 1180px; }
 
@@ -443,22 +439,41 @@
 
     header h1 { font-size: clamp(3rem, 5.5vw, 5.5rem); }
 
+    /* 3 equal columns, tight border box */
     .prompt-list {
       display: grid;
-      grid-template-columns: 1fr 1.45fr 1fr;
-      grid-template-rows: auto auto;
-      gap: 1px;
-      background: var(--border);
+      grid-template-columns: 1fr 1fr 1fr;
       border: 1px solid var(--border);
+      /* align-items:stretch is the default — all columns same height */
     }
 
-    .phase-section { background: var(--bg); padding: 2rem; }
+    /* Each column is a vertical flex stack */
+    .bento-col {
+      display: flex;
+      flex-direction: column;
+    }
 
-    .phase-output   { grid-column: 1; grid-row: 1; }
-    .phase-workflow { grid-column: 2; grid-row: 1 / 3; }
-    .phase-context  { grid-column: 1; grid-row: 2; }
-    .phase-review   { grid-column: 3; grid-row: 1; }
-    .phase-debug    { grid-column: 3; grid-row: 2; }
+    /* Column dividers */
+    .bento-col + .bento-col {
+      border-left: 1px solid var(--border);
+    }
+
+    /* Section base on desktop */
+    .phase-section {
+      padding: 2rem;
+      flex: 0 0 auto; /* don't grow by default */
+    }
+
+    /* Last section in each column stretches to fill remaining space,
+       eliminating dead whitespace and completing the bento rectangle */
+    .bento-col .phase-section:last-child {
+      flex: 1;
+    }
+
+    /* Divider between stacked sections within a column */
+    .bento-col .phase-section + .phase-section {
+      border-top: 1px solid var(--border);
+    }
   }
 </style>
 </head>
@@ -498,37 +513,41 @@
 const CLIPBOARD_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`;
 const CHECK_ICON    = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
 
-const PHASE_ORDER = ['output', 'workflow', 'context', 'review', 'debug'];
+// Column assignment for desktop bento layout
+const LEFT_PHASES   = ['output', 'context'];
+const CENTER_PHASES = ['workflow'];
+const RIGHT_PHASES  = ['review', 'debug'];
+const PHASE_ORDER   = ['output', 'workflow', 'context', 'review', 'debug'];
 
 const DEFAULT_PROMPTS = [
-  { id: 'd1',  label: 'Markdown Prompt Export',         tag: 'output',   text: "Can you write this up in the form of a markdown prompt I can share with Cursor?" },
-  { id: 'd12', label: 'Diff Only',                      tag: 'output',   text: "Show me only the lines that changed, with enough surrounding context to understand where they go. Don't output the entire file." },
-  { id: 'd22', label: 'CLAUDE.md / Cursor Rules Export', tag: 'output',  text: "Take the conventions, patterns, and decisions we've established in this conversation and write them as a CLAUDE.md (or .cursorrules) file I can put in my project root. Include coding style, architecture decisions, key libraries, and any rules about how AI should behave in this codebase." },
-  { id: 'd2',  label: 'Handoff Document',               tag: 'workflow', text: "Create a handoff document that captures all the key themes, decisions, open questions, and the current state of the project. Include enough context that a new AI session (or a teammate) could pick up where we left off." },
-  { id: 'd5',  label: 'Explain Before Changing',        tag: 'workflow', text: "Before writing any code, explain your plan in plain language. What will you change, why, and what are the tradeoffs? Wait for my approval before implementing." },
-  { id: 'd7',  label: 'Summarize Current State',        tag: 'workflow', text: "Summarize what we've done so far in this conversation, what's working, what's broken, and what the next steps should be." },
-  { id: 'd9',  label: 'Write Tests First',               tag: 'workflow', text: "Before implementing the feature, write the tests first. Define the expected behavior, edge cases, and failure modes. Then implement to make the tests pass." },
-  { id: 'd15', label: 'Extend, Don\'t Rewrite',         tag: 'workflow', text: "Take this existing code and add the feature I'm describing. Keep all existing logic intact. Don't rewrite or restructure what already works — build on top of it incrementally." },
-  { id: 'd16', label: 'Define the Problem First',       tag: 'workflow', text: "Before proposing a solution, restate the problem in your own words. What exactly are we trying to solve? What's the scope and what's out of scope? What does success look like? Then propose your approach." },
-  { id: 'd17', label: 'Progress Checkpoint',            tag: 'workflow', text: "Write a progress checkpoint. Summarize: (1) what's been completed and is working, (2) what's in progress, (3) known issues or bugs, (4) clear next steps. Format it so someone starting a fresh session could pick this up immediately." },
-  { id: 'd23', label: 'Ask Before You Assume',          tag: 'workflow', text: "If anything about this request is ambiguous or could be interpreted multiple ways, ask me 1-2 clarifying questions before proceeding. Don't guess at requirements — I'd rather answer a quick question than undo wrong assumptions." },
-  { id: 'd27', label: 'One Thing at a Time',            tag: 'workflow', text: "Let's work on this incrementally. Do one small, complete change at a time. After each change, verify it works before moving on. Don't try to do everything in a single pass." },
-  { id: 'd3',  label: 'Codebase Familiarization',       tag: 'context',  text: "Familiarize yourself with my codebase. Start by reading the project overview doc and directory structure, then summarize your understanding of the architecture before making any changes." },
-  { id: 'd10', label: "Don't Hallucinate APIs",         tag: 'context',  text: "Only use APIs, methods, and libraries that you are confident exist. If you're unsure whether something is available, say so rather than guessing. I'd rather you ask than fabricate." },
-  { id: 'd11', label: 'Scope Check',                    tag: 'context',  text: "Before starting, tell me: What files will you need to touch? What's your understanding of the current behavior vs. desired behavior? Are there any dependencies or side effects I should know about?" },
-  { id: 'd14', label: 'Set the Constraints',            tag: 'context',  text: "Here are your constraints for this task: Use only the existing patterns and libraries already in the project. Do not introduce new dependencies. Match the naming conventions and code style you see in the codebase. If you need to deviate from any of these, explain why first." },
-  { id: 'd18', label: 'Match This Pattern',             tag: 'context',  text: "Here's an example of the pattern/style I want you to follow: [paste example]. Now apply that same pattern to the new task I'm about to describe. Match the structure, naming, and level of detail as closely as possible." },
-  { id: 'd20', label: 'You Are a Cautious Senior Dev',  tag: 'context',  text: "Approach this like a cautious senior developer doing a production deploy on a Friday. Prioritize stability over cleverness. Flag anything you're unsure about. Prefer boring, proven solutions over elegant but risky ones." },
-  { id: 'd28', label: 'Stay in Your Lane',              tag: 'context',  text: "Only change what I've asked you to change. Do not \"improve\" other parts of the code you happen to notice. Do not add features I didn't request. Do not update formatting or style in files I didn't mention. Stay focused." },
-  { id: 'd4',  label: 'Code Review',                    tag: 'review',   text: "Review this code for bugs, edge cases, performance issues, and readability. Don't refactor — just flag problems with brief explanations of why they matter." },
-  { id: 'd13', label: 'Risk Assessment',                tag: 'review',   text: "What risk is there to making these changes? Are you certain you understand all the angles and ramifications? Walk me through what could break, what depends on this code, and what assumptions you're making. If you're not fully certain, say so." },
-  { id: 'd19', label: 'Verify End-to-End',              tag: 'review',   text: "Don't just check that the code compiles or passes unit tests. Walk through the entire user flow end-to-end and verify that the feature works as a real user would experience it. Flag anything that feels broken or incomplete, even if the code looks correct." },
-  { id: 'd24', label: 'Security Audit',                 tag: 'review',   text: "Review this code specifically for security vulnerabilities: injection risks, authentication/authorization gaps, exposed secrets, unsafe data handling, and CORS issues. Rate each finding by severity and suggest a fix." },
-  { id: 'd25', label: 'Think Like an Engineer, Not a Coder', tag: 'review', text: "Don't just write code that works. Consider: How will this be maintained? How does it handle failure? What happens at scale? What will confuse the next developer who reads this? Write code that a team can live with long-term." },
-  { id: 'd6',  label: 'Minimal Fix Only',               tag: 'debug',    text: "Fix only the specific bug or issue described. Do not refactor surrounding code, rename variables, change formatting, or make any other improvements — no matter how tempting." },
-  { id: 'd8',  label: 'Think Step-by-Step',             tag: 'debug',    text: "Think through this step by step. Break the problem down, consider edge cases, and explain your reasoning before providing a solution." },
-  { id: 'd21', label: 'Consider Alternatives',          tag: 'debug',    text: "Before committing to an approach, briefly outline 2-3 different ways to solve this. List the tradeoffs of each (complexity, performance, maintainability). Then recommend one and explain why." },
-  { id: 'd26', label: 'Expected vs. Actual',            tag: 'debug',    text: "Here's the bug: I expected [X] but I'm getting [Y]. Here's the relevant code: [paste]. Don't rewrite everything — just identify the root cause and suggest the minimal fix." },
+  { id: 'd1',  label: 'Markdown Prompt Export',              tag: 'output',   text: "Can you write this up in the form of a markdown prompt I can share with Cursor?" },
+  { id: 'd12', label: 'Diff Only',                           tag: 'output',   text: "Show me only the lines that changed, with enough surrounding context to understand where they go. Don't output the entire file." },
+  { id: 'd22', label: 'CLAUDE.md / Cursor Rules Export',     tag: 'output',   text: "Take the conventions, patterns, and decisions we've established in this conversation and write them as a CLAUDE.md (or .cursorrules) file I can put in my project root. Include coding style, architecture decisions, key libraries, and any rules about how AI should behave in this codebase." },
+  { id: 'd2',  label: 'Handoff Document',                    tag: 'workflow', text: "Create a handoff document that captures all the key themes, decisions, open questions, and the current state of the project. Include enough context that a new AI session (or a teammate) could pick up where we left off." },
+  { id: 'd5',  label: 'Explain Before Changing',             tag: 'workflow', text: "Before writing any code, explain your plan in plain language. What will you change, why, and what are the tradeoffs? Wait for my approval before implementing." },
+  { id: 'd7',  label: 'Summarize Current State',             tag: 'workflow', text: "Summarize what we've done so far in this conversation, what's working, what's broken, and what the next steps should be." },
+  { id: 'd9',  label: 'Write Tests First',                   tag: 'workflow', text: "Before implementing the feature, write the tests first. Define the expected behavior, edge cases, and failure modes. Then implement to make the tests pass." },
+  { id: 'd15', label: "Extend, Don't Rewrite",               tag: 'workflow', text: "Take this existing code and add the feature I'm describing. Keep all existing logic intact. Don't rewrite or restructure what already works — build on top of it incrementally." },
+  { id: 'd16', label: 'Define the Problem First',            tag: 'workflow', text: "Before proposing a solution, restate the problem in your own words. What exactly are we trying to solve? What's the scope and what's out of scope? What does success look like? Then propose your approach." },
+  { id: 'd17', label: 'Progress Checkpoint',                 tag: 'workflow', text: "Write a progress checkpoint. Summarize: (1) what's been completed and is working, (2) what's in progress, (3) known issues or bugs, (4) clear next steps. Format it so someone starting a fresh session could pick this up immediately." },
+  { id: 'd23', label: 'Ask Before You Assume',               tag: 'workflow', text: "If anything about this request is ambiguous or could be interpreted multiple ways, ask me 1-2 clarifying questions before proceeding. Don't guess at requirements — I'd rather answer a quick question than undo wrong assumptions." },
+  { id: 'd27', label: 'One Thing at a Time',                 tag: 'workflow', text: "Let's work on this incrementally. Do one small, complete change at a time. After each change, verify it works before moving on. Don't try to do everything in a single pass." },
+  { id: 'd3',  label: 'Codebase Familiarization',            tag: 'context',  text: "Familiarize yourself with my codebase. Start by reading the project overview doc and directory structure, then summarize your understanding of the architecture before making any changes." },
+  { id: 'd10', label: "Don't Hallucinate APIs",              tag: 'context',  text: "Only use APIs, methods, and libraries that you are confident exist. If you're unsure whether something is available, say so rather than guessing. I'd rather you ask than fabricate." },
+  { id: 'd11', label: 'Scope Check',                         tag: 'context',  text: "Before starting, tell me: What files will you need to touch? What's your understanding of the current behavior vs. desired behavior? Are there any dependencies or side effects I should know about?" },
+  { id: 'd14', label: 'Set the Constraints',                 tag: 'context',  text: "Here are your constraints for this task: Use only the existing patterns and libraries already in the project. Do not introduce new dependencies. Match the naming conventions and code style you see in the codebase. If you need to deviate from any of these, explain why first." },
+  { id: 'd18', label: 'Match This Pattern',                  tag: 'context',  text: "Here's an example of the pattern/style I want you to follow: [paste example]. Now apply that same pattern to the new task I'm about to describe. Match the structure, naming, and level of detail as closely as possible." },
+  { id: 'd20', label: 'You Are a Cautious Senior Dev',       tag: 'context',  text: "Approach this like a cautious senior developer doing a production deploy on a Friday. Prioritize stability over cleverness. Flag anything you're unsure about. Prefer boring, proven solutions over elegant but risky ones." },
+  { id: 'd28', label: 'Stay in Your Lane',                   tag: 'context',  text: "Only change what I've asked you to change. Do not \"improve\" other parts of the code you happen to notice. Do not add features I didn't request. Do not update formatting or style in files I didn't mention. Stay focused." },
+  { id: 'd4',  label: 'Code Review',                         tag: 'review',   text: "Review this code for bugs, edge cases, performance issues, and readability. Don't refactor — just flag problems with brief explanations of why they matter." },
+  { id: 'd13', label: 'Risk Assessment',                     tag: 'review',   text: "What risk is there to making these changes? Are you certain you understand all the angles and ramifications? Walk me through what could break, what depends on this code, and what assumptions you're making. If you're not fully certain, say so." },
+  { id: 'd19', label: 'Verify End-to-End',                   tag: 'review',   text: "Don't just check that the code compiles or passes unit tests. Walk through the entire user flow end-to-end and verify that the feature works as a real user would experience it. Flag anything that feels broken or incomplete, even if the code looks correct." },
+  { id: 'd24', label: 'Security Audit',                      tag: 'review',   text: "Review this code specifically for security vulnerabilities: injection risks, authentication/authorization gaps, exposed secrets, unsafe data handling, and CORS issues. Rate each finding by severity and suggest a fix." },
+  { id: 'd25', label: 'Think Like an Engineer, Not a Coder', tag: 'review',   text: "Don't just write code that works. Consider: How will this be maintained? How does it handle failure? What happens at scale? What will confuse the next developer who reads this? Write code that a team can live with long-term." },
+  { id: 'd6',  label: 'Minimal Fix Only',                    tag: 'debug',    text: "Fix only the specific bug or issue described. Do not refactor surrounding code, rename variables, change formatting, or make any other improvements — no matter how tempting." },
+  { id: 'd8',  label: 'Think Step-by-Step',                  tag: 'debug',    text: "Think through this step by step. Break the problem down, consider edge cases, and explain your reasoning before providing a solution." },
+  { id: 'd21', label: 'Consider Alternatives',               tag: 'debug',    text: "Before committing to an approach, briefly outline 2-3 different ways to solve this. List the tradeoffs of each (complexity, performance, maintainability). Then recommend one and explain why." },
+  { id: 'd26', label: 'Expected vs. Actual',                 tag: 'debug',    text: "Here's the bug: I expected [X] but I'm getting [Y]. Here's the relevant code: [paste]. Don't rewrite everything — just identify the root cause and suggest the minimal fix." },
 ];
 
 let prompts = [];
@@ -575,6 +594,16 @@ function renderCard(p, delay) {
   </div>`;
 }
 
+function renderSection(phase, groups, delayRef) {
+  if (!groups[phase]) return '';
+  const cards = groups[phase].map(p => renderCard(p, delayRef.n++)).join('');
+  return `<div class="phase-section phase-${phase}">
+    <div class="phase-name">${phase}</div>
+    <div class="phase-divider"></div>
+    ${cards}
+  </div>`;
+}
+
 function renderPrompts() {
   const container = document.getElementById('promptList');
 
@@ -585,20 +614,21 @@ function renderPrompts() {
 
   const groups = {};
   prompts.forEach(p => { (groups[p.tag] = groups[p.tag] || []).push(p); });
-  const ordered = [
-    ...PHASE_ORDER.filter(t => groups[t]),
-    ...Object.keys(groups).filter(t => !PHASE_ORDER.includes(t))
-  ];
-  let delay = 0;
-  container.innerHTML = ordered.map(phase =>
-    `<div class="phase-section phase-${phase}">
-      <div class="phase-header">
-        <div class="phase-name">${phase}</div>
-        <div class="phase-divider"></div>
-      </div>
-      ${groups[phase].map(p => renderCard(p, delay++)).join('')}
-    </div>`
-  ).join('');
+
+  // Extra categories not in the predefined order go into the left column
+  const otherPhases = Object.keys(groups).filter(t => !PHASE_ORDER.includes(t));
+
+  const delayRef = { n: 0 }; // mutable counter passed by ref so delay increments across columns
+
+  const leftHTML   = [...LEFT_PHASES, ...otherPhases].map(t => renderSection(t, groups, delayRef)).join('');
+  const centerHTML = CENTER_PHASES.map(t => renderSection(t, groups, delayRef)).join('');
+  const rightHTML  = RIGHT_PHASES.map(t => renderSection(t, groups, delayRef)).join('');
+
+  container.innerHTML = `
+    <div class="bento-col">${leftHTML}</div>
+    <div class="bento-col">${centerHTML}</div>
+    <div class="bento-col">${rightHTML}</div>
+  `;
 
   applyFilter();
 }
@@ -644,7 +674,7 @@ function toggleForm() {
 function savePrompt() {
   const label = document.getElementById('newLabel').value.trim();
   const text  = document.getElementById('newPrompt').value.trim();
-  const tag   = document.getElementById('newTag').value;
+  const tag   = document.getElementById('newTag').value.trim() || 'context';
   if (!label || !text) return;
   prompts.push({ id: 'u' + Date.now(), label, text, tag });
   saveToStorage();
