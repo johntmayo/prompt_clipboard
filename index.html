@@ -4,22 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prompt Clipboard</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0e0e10;
-    --surface: #18181b;
-    --surface-hover: #1e1e22;
-    --border: #2a2a2e;
-    --border-hover: #3a3a40;
-    --text: #e4e4e7;
-    --text-muted: #71717a;
+    --bg: #0e0d14;
+    --surface: #151421;
+    --surface-hover: #1d1c2e;
+    --border: #25243a;
+    --border-hover: #38374e;
+    --text: #eeedf5;
+    --text-soft: #9998ae;
+    --text-muted: #6c6b82;
     --accent: #a3e635;
     --accent-dim: rgba(163, 230, 53, 0.08);
-    --accent-glow: rgba(163, 230, 53, 0.15);
-    --tag-bg: #27272a;
-    --copied: #22c55e;
-    --radius: 10px;
+    --before: #60a5fa;
+    --before-dim: rgba(96, 165, 250, 0.08);
+    --during: #fbbf24;
+    --during-dim: rgba(251, 191, 36, 0.08);
+    --after: #a78bfa;
+    --after-dim: rgba(167, 139, 250, 0.08);
+    --copied: #34d399;
+    --radius: 12px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,17 +34,17 @@
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
-    padding: 2rem;
+    padding: 2.5rem 2rem;
   }
 
   .container {
-    max-width: 720px;
+    max-width: 740px;
     margin: 0 auto;
   }
 
   header {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.75rem;
     border-bottom: 1px solid var(--border);
   }
 
@@ -60,23 +65,25 @@
   }
 
   header p {
-    font-size: 0.8rem;
+    font-size: 0.83rem;
     color: var(--text-muted);
-    margin-top: 0.4rem;
+    margin-top: 0.5rem;
     padding-left: 1.1rem;
   }
 
+  /* Filter bar */
   .filter-bar {
     display: flex;
     gap: 0.4rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.25rem;
     flex-wrap: wrap;
   }
 
   .filter-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    padding: 0.35rem 0.7rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 500;
+    padding: 0.4rem 0.95rem;
     border-radius: 100px;
     border: 1px solid var(--border);
     background: transparent;
@@ -84,6 +91,7 @@
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
+    text-transform: capitalize;
   }
 
   .filter-btn:hover {
@@ -97,62 +105,85 @@
     color: var(--accent);
   }
 
-  /* Phase section grouping */
+  /* Phase sections */
   .prompt-list {
     display: flex;
     flex-direction: column;
-    gap: 0;
   }
 
   .phase-section {
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
+    gap: 0.55rem;
   }
 
   .phase-section + .phase-section {
-    margin-top: 1.75rem;
+    margin-top: 2.25rem;
   }
 
   .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .phase-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .phase-name {
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.63rem;
+    font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: var(--text-muted);
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.1rem;
-    border-bottom: 1px solid var(--border);
   }
+
+  .phase-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .phase-before .phase-dot  { background: var(--before); }
+  .phase-before .phase-name { color: var(--before); }
+  .phase-during .phase-dot  { background: var(--during); }
+  .phase-during .phase-name { color: var(--during); }
+  .phase-after  .phase-dot  { background: var(--after); }
+  .phase-after  .phase-name { color: var(--after); }
 
   /* Cards */
   .prompt-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1rem 1.1rem;
+    padding: 1.1rem 1.2rem;
     cursor: pointer;
-    transition: all 0.15s ease;
-    position: relative;
+    transition: all 0.18s ease;
     display: flex;
     align-items: flex-start;
-    gap: 0.8rem;
+    gap: 0.9rem;
   }
 
   .prompt-card:hover {
     background: var(--surface-hover);
     border-color: var(--border-hover);
     transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
   }
 
   .prompt-card:active {
     transform: translateY(0);
+    box-shadow: none;
   }
 
   .prompt-card.copied {
     border-color: var(--copied) !important;
-    box-shadow: 0 0 0 1px var(--copied), 0 0 20px rgba(34, 197, 94, 0.08);
+    box-shadow: 0 0 0 1px var(--copied), 0 0 20px rgba(52, 211, 153, 0.1) !important;
   }
 
   .prompt-content {
@@ -161,18 +192,17 @@
   }
 
   .prompt-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.35rem;
     line-height: 1.3;
   }
 
   .prompt-text {
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    line-height: 1.55;
+    font-size: 0.83rem;
+    color: var(--text-soft);
+    line-height: 1.6;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -181,15 +211,15 @@
 
   .copy-icon {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-muted);
     transition: all 0.15s ease;
-    margin-top: 0.15rem;
+    margin-top: 0.1rem;
   }
 
   .prompt-card:hover .copy-icon {
@@ -199,25 +229,23 @@
 
   .prompt-card.copied .copy-icon {
     color: var(--copied);
-    background: rgba(34, 197, 94, 0.1);
+    background: rgba(52, 211, 153, 0.1);
   }
 
-  .copy-icon svg {
-    width: 16px;
-    height: 16px;
-  }
+  .copy-icon svg { width: 16px; height: 16px; }
 
+  /* Toast */
   .toast {
     position: fixed;
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
     background: var(--copied);
-    color: #0e0e10;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 0.5rem 1rem;
+    color: #0e0d14;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.5rem 1.1rem;
     border-radius: 100px;
     pointer-events: none;
     opacity: 0;
@@ -230,16 +258,18 @@
     opacity: 1;
   }
 
+  /* Add section */
   .add-section {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
+    margin-top: 2.25rem;
+    padding-top: 1.75rem;
     border-top: 1px solid var(--border);
   }
 
   .add-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    padding: 0.6rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.83rem;
+    font-weight: 500;
+    padding: 0.7rem 1rem;
     border-radius: var(--radius);
     border: 1px dashed var(--border);
     background: transparent;
@@ -258,21 +288,21 @@
   .add-form {
     display: none;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.65rem;
   }
 
   .add-form.visible { display: flex; }
 
   .reset-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    padding: 0.3rem 0.6rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.73rem;
+    padding: 0.3rem 0.65rem;
     border-radius: 6px;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    margin-top: 0.4rem;
+    margin-top: 0.5rem;
     transition: all 0.15s;
     display: block;
   }
@@ -282,10 +312,12 @@
     border-color: var(--border-hover);
   }
 
-  .add-form input, .add-form textarea, .add-form select {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    padding: 0.6rem 0.8rem;
+  .add-form input,
+  .add-form textarea,
+  .add-form select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.83rem;
+    padding: 0.65rem 0.9rem;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -294,19 +326,23 @@
     transition: border-color 0.15s;
   }
 
-  .add-form input:focus, .add-form textarea:focus {
+  .add-form input::placeholder,
+  .add-form textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  .add-form input:focus,
+  .add-form textarea:focus {
     border-color: var(--accent);
   }
 
   .add-form textarea {
     resize: vertical;
-    min-height: 80px;
-    line-height: 1.5;
+    min-height: 90px;
+    line-height: 1.55;
   }
 
-  .add-form select {
-    cursor: pointer;
-  }
+  .add-form select { cursor: pointer; }
 
   .form-actions {
     display: flex;
@@ -315,10 +351,11 @@
   }
 
   .form-actions button {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    padding: 0.45rem 0.9rem;
-    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
     border: 1px solid var(--border);
     cursor: pointer;
     transition: all 0.15s;
@@ -333,9 +370,9 @@
 
   .btn-save {
     background: var(--accent);
-    color: #0e0e10;
+    color: #0e0d14;
     border-color: var(--accent);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .btn-save:hover { filter: brightness(1.1); }
@@ -344,12 +381,12 @@
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .prompt-card { animation: fadeIn 0.2s ease both; }
@@ -385,7 +422,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast">✓ copied to clipboard</div>
+<div class="toast" id="toast">✓ copied</div>
 
 <script>
 const CLIPBOARD_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`;
@@ -498,7 +535,7 @@ function setFilter(tag) {
 }
 
 function renderCard(p, delayIndex) {
-  return `<div class="prompt-card" id="card-${p.id}" onclick="copyPrompt('${p.id}')" style="animation-delay: ${delayIndex * 0.03}s" title="Click to copy">
+  return `<div class="prompt-card" id="card-${p.id}" onclick="copyPrompt('${p.id}')" style="animation-delay:${delayIndex * 0.03}s" title="Click to copy">
     <div class="prompt-content">
       <div class="prompt-label">${p.label}</div>
       <div class="prompt-text">${escapeHtml(p.text)}</div>
@@ -517,7 +554,6 @@ function renderPrompts() {
   }
 
   if (activeFilter === 'all') {
-    // Group by phase in canonical order
     const groups = {};
     filtered.forEach(p => {
       if (!groups[p.tag]) groups[p.tag] = [];
@@ -532,10 +568,13 @@ function renderPrompts() {
     let delay = 0;
     container.innerHTML = orderedTags.map(phase => {
       const cards = groups[phase];
-      const cardHtml = cards.map(p => renderCard(p, delay++)).join('');
-      return `<div class="phase-section">
-        <div class="phase-header">${phase}</div>
-        ${cardHtml}
+      return `<div class="phase-section phase-${phase}">
+        <div class="phase-header">
+          <span class="phase-dot"></span>
+          <span class="phase-name">${phase}</span>
+          <span class="phase-rule"></span>
+        </div>
+        ${cards.map(p => renderCard(p, delay++)).join('')}
       </div>`;
     }).join('');
   } else {
@@ -556,7 +595,6 @@ async function copyPrompt(id) {
   try {
     await navigator.clipboard.writeText(prompt.text);
   } catch {
-    // fallback
     const ta = document.createElement('textarea');
     ta.value = prompt.text;
     document.body.appendChild(ta);
@@ -592,7 +630,6 @@ function savePrompt() {
   const label = document.getElementById('newLabel').value.trim();
   const text = document.getElementById('newPrompt').value.trim();
   const tag = document.getElementById('newTag').value;
-
   if (!label || !text) return;
 
   prompts.push({ id: 'u' + Date.now(), label, text, tag });
@@ -615,7 +652,6 @@ function resetDefaults() {
   }
 }
 
-// Init
 loadPrompts();
 renderFilters();
 renderPrompts();
