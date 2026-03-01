@@ -147,6 +147,7 @@
   .phase-context  { --phase-color: #7B3FBE;         --phase-tint: rgba(123,63,190,0.06); }
   .phase-review   { --phase-color: var(--copied);   --phase-tint: var(--copied-tint); }
   .phase-debug    { --phase-color: var(--after);    --phase-tint: var(--after-tint); }
+  .phase-design   { --phase-color: #B5338A;         --phase-tint: rgba(181,51,138,0.06); }
 
   /* ── Category header ── */
   .phase-name {
@@ -516,8 +517,8 @@ const CHECK_ICON    = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewB
 // Column assignment for desktop bento layout
 const LEFT_PHASES   = ['output', 'context'];
 const CENTER_PHASES = ['workflow'];
-const RIGHT_PHASES  = ['review', 'debug'];
-const PHASE_ORDER   = ['output', 'workflow', 'context', 'review', 'debug'];
+const RIGHT_PHASES  = ['review', 'debug', 'design'];
+const PHASE_ORDER   = ['output', 'workflow', 'context', 'review', 'debug', 'design'];
 
 const DEFAULT_PROMPTS = [
   { id: 'd1',  label: 'Markdown Prompt Export',              tag: 'output',   text: "Can you write this up in the form of a markdown prompt I can share with Cursor?" },
@@ -548,6 +549,9 @@ const DEFAULT_PROMPTS = [
   { id: 'd8',  label: 'Think Step-by-Step',                  tag: 'debug',    text: "Think through this step by step. Break the problem down, consider edge cases, and explain your reasoning before providing a solution." },
   { id: 'd21', label: 'Consider Alternatives',               tag: 'debug',    text: "Before committing to an approach, briefly outline 2-3 different ways to solve this. List the tradeoffs of each (complexity, performance, maintainability). Then recommend one and explain why." },
   { id: 'd26', label: 'Expected vs. Actual',                 tag: 'debug',    text: "Here's the bug: I expected [X] but I'm getting [Y]. Here's the relevant code: [paste]. Don't rewrite everything — just identify the root cause and suggest the minimal fix." },
+  { id: 'd29', label: 'Original Vision',                    tag: 'design',   text: "Ignore the existing visual direction entirely. Come up with a bold, original design for this interface — pick a distinct aesthetic, commit to it fully, and execute it with precision. I want something genuinely memorable, not a generic solution. Surprise me." },
+  { id: 'd30', label: 'Polish & Tighten',                   tag: 'design',   text: "I'm happy with the current visual direction — keep the aesthetic, colors, typography, and overall feel intact. Focus entirely on polish: tighten spacing, fix visual inconsistencies, strengthen hierarchy, and make every detail feel more intentional. No redesigns, no new directions." },
+  { id: 'd31', label: 'Refine or Reimagine',                tag: 'design',   text: "I like what's here, but I want your honest design eye on it. If you think the current direction is strong, refine and polish it. If you think it has real weaknesses or could be significantly better with a different approach, I'm open to a more radical redesign — just explain your reasoning first." },
 ];
 
 let prompts = [];
