@@ -176,6 +176,21 @@
   .phase-after .phase-num,
   .phase-after .phase-label { color: var(--after); }
 
+  .phase-output .phase-num,
+  .phase-output .phase-label { color: var(--before); }
+
+  .phase-workflow .phase-num,
+  .phase-workflow .phase-label { color: var(--during); }
+
+  .phase-context .phase-num,
+  .phase-context .phase-label { color: #7B3FBE; }
+
+  .phase-review .phase-num,
+  .phase-review .phase-label { color: var(--copied); }
+
+  .phase-debug .phase-num,
+  .phase-debug .phase-label { color: var(--after); }
+
   /* ── Cards ── */
   .prompt-card {
     background: transparent;
@@ -195,19 +210,34 @@
   }
 
   /* Phase color left borders */
-  .phase-before .prompt-card { border-left-color: var(--before); }
-  .phase-during .prompt-card { border-left-color: var(--during); }
-  .phase-after  .prompt-card { border-left-color: var(--after); }
+  .phase-before   .prompt-card { border-left-color: var(--before); }
+  .phase-during   .prompt-card { border-left-color: var(--during); }
+  .phase-after    .prompt-card { border-left-color: var(--after); }
+  .phase-output   .prompt-card { border-left-color: var(--before); }
+  .phase-workflow .prompt-card { border-left-color: var(--during); }
+  .phase-context  .prompt-card { border-left-color: #7B3FBE; }
+  .phase-review   .prompt-card { border-left-color: var(--copied); }
+  .phase-debug    .prompt-card { border-left-color: var(--after); }
 
   /* Phase hover tints */
-  .phase-before .prompt-card:hover { background: var(--before-tint); }
-  .phase-during .prompt-card:hover { background: var(--during-tint); }
-  .phase-after  .prompt-card:hover { background: var(--after-tint); }
+  .phase-before   .prompt-card:hover { background: var(--before-tint); }
+  .phase-during   .prompt-card:hover { background: var(--during-tint); }
+  .phase-after    .prompt-card:hover { background: var(--after-tint); }
+  .phase-output   .prompt-card:hover { background: var(--before-tint); }
+  .phase-workflow .prompt-card:hover { background: var(--during-tint); }
+  .phase-context  .prompt-card:hover { background: rgba(123,63,190,0.06); }
+  .phase-review   .prompt-card:hover { background: var(--copied-tint); }
+  .phase-debug    .prompt-card:hover { background: var(--after-tint); }
 
   /* Copied state */
-  .phase-before .prompt-card.copied { background: var(--before-tint) !important; }
-  .phase-during .prompt-card.copied { background: var(--during-tint) !important; }
-  .phase-after  .prompt-card.copied { background: var(--after-tint)  !important; }
+  .phase-before   .prompt-card.copied { background: var(--before-tint) !important; }
+  .phase-during   .prompt-card.copied { background: var(--during-tint) !important; }
+  .phase-after    .prompt-card.copied { background: var(--after-tint)  !important; }
+  .phase-output   .prompt-card.copied { background: var(--before-tint) !important; }
+  .phase-workflow .prompt-card.copied { background: var(--during-tint) !important; }
+  .phase-context  .prompt-card.copied { background: rgba(123,63,190,0.06) !important; }
+  .phase-review   .prompt-card.copied { background: var(--copied-tint) !important; }
+  .phase-debug    .prompt-card.copied { background: var(--after-tint)  !important; }
 
   .prompt-card.copied { animation: copyPulse 0.28s ease; }
 
@@ -253,9 +283,14 @@
     margin-top: 0.04rem;
   }
 
-  .phase-before .prompt-card:hover .copy-icon { color: var(--before); }
-  .phase-during .prompt-card:hover .copy-icon { color: var(--during); }
-  .phase-after  .prompt-card:hover .copy-icon { color: var(--after); }
+  .phase-before   .prompt-card:hover .copy-icon { color: var(--before); }
+  .phase-during   .prompt-card:hover .copy-icon { color: var(--during); }
+  .phase-after    .prompt-card:hover .copy-icon { color: var(--after); }
+  .phase-output   .prompt-card:hover .copy-icon { color: var(--before); }
+  .phase-workflow .prompt-card:hover .copy-icon { color: var(--during); }
+  .phase-context  .prompt-card:hover .copy-icon { color: #7B3FBE; }
+  .phase-review   .prompt-card:hover .copy-icon { color: var(--copied); }
+  .phase-debug    .prompt-card:hover .copy-icon { color: var(--after); }
   .prompt-card.copied .copy-icon { color: var(--copied); }
 
   .copy-icon svg { width: 15px; height: 15px; }
@@ -358,21 +393,11 @@
     -webkit-appearance: none;
   }
 
-  .add-form select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%239490A8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.8rem center;
-    background-color: transparent;
-    padding-right: 2.25rem;
-    cursor: pointer;
-  }
-
   .add-form input::placeholder,
   .add-form textarea::placeholder { color: var(--text-muted); }
 
   .add-form input:focus,
-  .add-form textarea:focus,
-  .add-form select:focus { border-color: var(--accent); }
+  .add-form textarea:focus { border-color: var(--accent); }
 
   .add-form textarea { resize: vertical; min-height: 90px; line-height: 1.65; }
 
@@ -467,7 +492,8 @@
     <div class="add-form" id="addForm">
       <input type="text" id="newLabel" placeholder="Label (e.g. Handoff Doc)">
       <textarea id="newPrompt" placeholder="Prompt text..."></textarea>
-      <select id="newTag"></select>
+      <input type="text" id="newTag" list="tagSuggestions" placeholder="Category (select or type new)">
+      <datalist id="tagSuggestions"></datalist>
       <div class="form-actions">
         <button class="btn-cancel" onclick="toggleForm()">cancel</button>
         <button class="btn-save" onclick="savePrompt()">save</button>
@@ -483,23 +509,38 @@
 const CLIPBOARD_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" /></svg>`;
 const CHECK_ICON    = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>`;
 
-const PHASE_ORDER = ['before', 'during', 'after'];
-const PHASE_NUMS  = { before: '01', during: '02', after: '03' };
+const PHASE_ORDER = ['output', 'workflow', 'context', 'review', 'debug'];
+const PHASE_NUMS  = { output: '01', workflow: '02', context: '03', review: '04', debug: '05' };
 
 const DEFAULT_PROMPTS = [
-  { id: 'd5',  label: 'Explain Before Changing',  tag: 'before', text: 'Before writing any code, explain your plan in plain language. What will you change, why, and what are the tradeoffs? Wait for my approval before implementing.' },
-  { id: 'd11', label: 'Scope Check',              tag: 'before', text: "Before starting, tell me: What files will you need to touch? What's your understanding of the current behavior vs. desired behavior? Are there any dependencies or side effects I should know about?" },
-  { id: 'd23', label: 'Ask Before You Assume',    tag: 'before', text: "If anything about this request is ambiguous or could be interpreted multiple ways, ask me 1-2 clarifying questions before proceeding. Don't guess at requirements — I'd rather answer a quick question than undo wrong assumptions." },
-  { id: 'd6',  label: 'Minimal Fix Only',         tag: 'during', text: 'Fix only the specific bug or issue described. Do not refactor surrounding code, rename variables, change formatting, or make any other improvements — no matter how tempting.' },
-  { id: 'd28', label: 'Stay in Your Lane',        tag: 'during', text: "Only change what I've asked you to change. Do not \"improve\" other parts of the code you happen to notice. Do not add features I didn't request. Do not update formatting or style in files I didn't mention. Stay focused." },
-  { id: 'd27', label: 'One Thing at a Time',      tag: 'during', text: "Let's work on this incrementally. Do one small, complete change at a time. After each change, verify it works before moving on. Don't try to do everything in a single pass." },
-  { id: 'd26', label: 'Expected vs. Actual',      tag: 'during', text: "Here's the bug: I expected [X] but I'm getting [Y]. Here's the relevant code: [paste]. Don't rewrite everything — just identify the root cause and suggest the minimal fix." },
-  { id: 'd4',  label: 'Code Review',              tag: 'after',  text: "Review this code for bugs, edge cases, performance issues, and readability. Don't refactor — just flag problems with brief explanations of why they matter." },
-  { id: 'd13', label: 'Risk Assessment',          tag: 'after',  text: "What risk is there to making these changes? Are you certain you understand all the angles and ramifications? Walk me through what could break, what depends on this code, and what assumptions you're making. If you're not fully certain, say so." },
-  { id: 'd2',  label: 'Handoff Document',         tag: 'after',  text: "Create a handoff document that captures all the key themes, decisions, open questions, and the current state of the project. Include enough context that a new AI session (or a teammate) could pick up where we left off." },
-  { id: 'd30', label: 'Document the Architecture', tag: 'before', text: "Before we write any code, create a set of markdown documents that map the overall architecture of this project. For each file, class, and key method, write a brief description of its purpose, responsibilities, and how it fits into the rest of the system. Save them so I can use @ references in future sessions to quickly orient a new chat without reviewing the entire codebase. If no code exists yet, help me design and document an initial architecture first — then we'll implement it once we're happy with the plan." },
-  { id: 'd31', label: 'Write Tests as You Go',     tag: 'during', text: "As you implement this, write unit and component tests alongside the code. Cover the core behavior and key edge cases. When done, show me how to run the full suite. Going forward, run all tests before making any changes — and fix any failures before moving on. The more thorough the tests, the safer we are from accidental regressions." },
-  { id: 'd32', label: 'Architecture Review',       tag: 'after',  text: "Step back and do a full architecture review of what we've built so far. Identify anything that's grown unwieldy, overly complex, or inconsistent as features were added incrementally. Give me your top recommendations for refactoring and cleanup, ranked by impact. Then let's work through them one step at a time — propose each change, wait for my approval, and implement before moving to the next." }
+  { id: 'd1',  label: 'Markdown Prompt Export',         tag: 'output',   text: "Can you write this up in the form of a markdown prompt I can share with Cursor?" },
+  { id: 'd12', label: 'Diff Only',                      tag: 'output',   text: "Show me only the lines that changed, with enough surrounding context to understand where they go. Don't output the entire file." },
+  { id: 'd22', label: 'CLAUDE.md / Cursor Rules Export', tag: 'output',  text: "Take the conventions, patterns, and decisions we've established in this conversation and write them as a CLAUDE.md (or .cursorrules) file I can put in my project root. Include coding style, architecture decisions, key libraries, and any rules about how AI should behave in this codebase." },
+  { id: 'd2',  label: 'Handoff Document',               tag: 'workflow', text: "Create a handoff document that captures all the key themes, decisions, open questions, and the current state of the project. Include enough context that a new AI session (or a teammate) could pick up where we left off." },
+  { id: 'd5',  label: 'Explain Before Changing',        tag: 'workflow', text: "Before writing any code, explain your plan in plain language. What will you change, why, and what are the tradeoffs? Wait for my approval before implementing." },
+  { id: 'd7',  label: 'Summarize Current State',        tag: 'workflow', text: "Summarize what we've done so far in this conversation, what's working, what's broken, and what the next steps should be." },
+  { id: 'd9',  label: 'Write Tests First',               tag: 'workflow', text: "Before implementing the feature, write the tests first. Define the expected behavior, edge cases, and failure modes. Then implement to make the tests pass." },
+  { id: 'd15', label: 'Extend, Don\'t Rewrite',         tag: 'workflow', text: "Take this existing code and add the feature I'm describing. Keep all existing logic intact. Don't rewrite or restructure what already works — build on top of it incrementally." },
+  { id: 'd16', label: 'Define the Problem First',       tag: 'workflow', text: "Before proposing a solution, restate the problem in your own words. What exactly are we trying to solve? What's the scope and what's out of scope? What does success look like? Then propose your approach." },
+  { id: 'd17', label: 'Progress Checkpoint',            tag: 'workflow', text: "Write a progress checkpoint. Summarize: (1) what's been completed and is working, (2) what's in progress, (3) known issues or bugs, (4) clear next steps. Format it so someone starting a fresh session could pick this up immediately." },
+  { id: 'd23', label: 'Ask Before You Assume',          tag: 'workflow', text: "If anything about this request is ambiguous or could be interpreted multiple ways, ask me 1-2 clarifying questions before proceeding. Don't guess at requirements — I'd rather answer a quick question than undo wrong assumptions." },
+  { id: 'd27', label: 'One Thing at a Time',            tag: 'workflow', text: "Let's work on this incrementally. Do one small, complete change at a time. After each change, verify it works before moving on. Don't try to do everything in a single pass." },
+  { id: 'd3',  label: 'Codebase Familiarization',       tag: 'context',  text: "Familiarize yourself with my codebase. Start by reading the project overview doc and directory structure, then summarize your understanding of the architecture before making any changes." },
+  { id: 'd10', label: "Don't Hallucinate APIs",         tag: 'context',  text: "Only use APIs, methods, and libraries that you are confident exist. If you're unsure whether something is available, say so rather than guessing. I'd rather you ask than fabricate." },
+  { id: 'd11', label: 'Scope Check',                    tag: 'context',  text: "Before starting, tell me: What files will you need to touch? What's your understanding of the current behavior vs. desired behavior? Are there any dependencies or side effects I should know about?" },
+  { id: 'd14', label: 'Set the Constraints',            tag: 'context',  text: "Here are your constraints for this task: Use only the existing patterns and libraries already in the project. Do not introduce new dependencies. Match the naming conventions and code style you see in the codebase. If you need to deviate from any of these, explain why first." },
+  { id: 'd18', label: 'Match This Pattern',             tag: 'context',  text: "Here's an example of the pattern/style I want you to follow: [paste example]. Now apply that same pattern to the new task I'm about to describe. Match the structure, naming, and level of detail as closely as possible." },
+  { id: 'd20', label: 'You Are a Cautious Senior Dev',  tag: 'context',  text: "Approach this like a cautious senior developer doing a production deploy on a Friday. Prioritize stability over cleverness. Flag anything you're unsure about. Prefer boring, proven solutions over elegant but risky ones." },
+  { id: 'd28', label: 'Stay in Your Lane',              tag: 'context',  text: "Only change what I've asked you to change. Do not \"improve\" other parts of the code you happen to notice. Do not add features I didn't request. Do not update formatting or style in files I didn't mention. Stay focused." },
+  { id: 'd4',  label: 'Code Review',                    tag: 'review',   text: "Review this code for bugs, edge cases, performance issues, and readability. Don't refactor — just flag problems with brief explanations of why they matter." },
+  { id: 'd13', label: 'Risk Assessment',                tag: 'review',   text: "What risk is there to making these changes? Are you certain you understand all the angles and ramifications? Walk me through what could break, what depends on this code, and what assumptions you're making. If you're not fully certain, say so." },
+  { id: 'd19', label: 'Verify End-to-End',              tag: 'review',   text: "Don't just check that the code compiles or passes unit tests. Walk through the entire user flow end-to-end and verify that the feature works as a real user would experience it. Flag anything that feels broken or incomplete, even if the code looks correct." },
+  { id: 'd24', label: 'Security Audit',                 tag: 'review',   text: "Review this code specifically for security vulnerabilities: injection risks, authentication/authorization gaps, exposed secrets, unsafe data handling, and CORS issues. Rate each finding by severity and suggest a fix." },
+  { id: 'd25', label: 'Think Like an Engineer, Not a Coder', tag: 'review', text: "Don't just write code that works. Consider: How will this be maintained? How does it handle failure? What happens at scale? What will confuse the next developer who reads this? Write code that a team can live with long-term." },
+  { id: 'd6',  label: 'Minimal Fix Only',               tag: 'debug',    text: "Fix only the specific bug or issue described. Do not refactor surrounding code, rename variables, change formatting, or make any other improvements — no matter how tempting." },
+  { id: 'd8',  label: 'Think Step-by-Step',             tag: 'debug',    text: "Think through this step by step. Break the problem down, consider edge cases, and explain your reasoning before providing a solution." },
+  { id: 'd21', label: 'Consider Alternatives',          tag: 'debug',    text: "Before committing to an approach, briefly outline 2-3 different ways to solve this. List the tradeoffs of each (complexity, performance, maintainability). Then recommend one and explain why." },
+  { id: 'd26', label: 'Expected vs. Actual',            tag: 'debug',    text: "Here's the bug: I expected [X] but I'm getting [Y]. Here's the relevant code: [paste]. Don't rewrite everything — just identify the root cause and suggest the minimal fix." },
 ];
 
 let prompts = [];
@@ -606,8 +647,8 @@ function toggleForm() {
   btn.style.display = vis ? 'none' : 'block';
   if (vis) {
     const tags = [...new Set(prompts.map(p => p.tag))].sort();
-    const sel  = document.getElementById('newTag');
-    sel.innerHTML = tags.map(t => `<option value="${t}">${t}</option>`).join('');
+    document.getElementById('tagSuggestions').innerHTML =
+      tags.map(t => `<option value="${t}">`).join('');
     document.getElementById('newLabel').focus();
   }
 }
@@ -621,6 +662,7 @@ function savePrompt() {
   saveToStorage();
   document.getElementById('newLabel').value = '';
   document.getElementById('newPrompt').value = '';
+  document.getElementById('newTag').value = '';
   toggleForm();
   renderFilters();
   renderPrompts();
